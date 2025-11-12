@@ -108,7 +108,8 @@ async function scrapeArticle(url, browser) {
     await page.setUserAgent(
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
     );
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 0 });
+
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
     const html = await page.content();
     const $ = cheerio.load(html);
@@ -153,11 +154,24 @@ async function fetchRecentFinancialLinks(browser) {
     for (const feedUrl of categoryUrls) {
       console.log(`🌐 Fetching category: ${feedUrl}`);
       const page = await browser.newPage();
+      await page.setViewport({ width: 1280, height: 800 });
+      await page.setJavaScriptEnabled(true);
       await page.setUserAgent(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
       );
 
-      await page.goto(feedUrl, { waitUntil: "domcontentloaded", timeout: 0 });
+      // 🕐 Wait for the page to fully load and render all content
+      await page.goto(feedUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+      try {
+        await page.waitForSelector("#cagetory li.clearfix a", { timeout: 15000 });
+      } catch {
+        console.warn("⚠️ Timeout waiting for news links on:", feedUrl);
+      }
+
+      // Optional extra delay to ensure full render
+      await new Promise((r) => setTimeout(r, 3000));
+
       const html = await page.content();
       await page.close();
 
@@ -280,6 +294,7 @@ async function runScraper(backendApiUrl) {
 }
 
 module.exports = { runScraper };
+
 
 
 
