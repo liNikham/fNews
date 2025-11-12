@@ -4,8 +4,9 @@ const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
 const axios = require("axios");
 const path = require("path");
+const os = require("os");
 
-// 🧭 Debugging information (helpful for Render)
+// 🧭 Debugging information (helpful for both local & Render)
 try {
   const pkg = require("puppeteer/package.json");
   console.log("🧭 Puppeteer version:", pkg.version);
@@ -13,16 +14,39 @@ try {
   console.log("⚠️ Puppeteer package info not found:", e.message);
 }
 
-// 🧩 Try to resolve Puppeteer’s local Chrome binary
+// 🧩 Detect and resolve Chrome binary path based on OS
 function getChromePath() {
-  const chromePath = path.join(
-    __dirname,
-    "../node_modules/.puppeteer_cache/chrome/linux-142.0.7444.61/chrome-linux64/chrome"
-  );
+  const basePath = path.join(__dirname, "../node_modules/.puppeteer_cache/chrome");
+  const platform = os.platform(); // 'win32' | 'linux' | 'darwin'
+
+  let chromePath;
+
+  if (platform === "win32") {
+    // 🪟 Windows (local dev)
+    chromePath = path.join(
+      basePath,
+      "win64-133.0.6943.141/chrome-win64/chrome.exe"
+    );
+  } else if (platform === "linux") {
+    // 🐧 Render (Linux)
+    chromePath = path.join(
+      basePath,
+      "linux-142.0.7444.61/chrome-linux64/chrome"
+    );
+  } else if (platform === "darwin") {
+    // 🍎 macOS (for Mac developers)
+    chromePath = path.join(
+      basePath,
+      "mac-arm64-133.0.6943.141/chrome-mac-arm64/Chromium.app/Contents/MacOS/Chromium"
+    );
+  } else {
+    throw new Error(`Unsupported platform: ${platform}`);
+  }
+
   return chromePath;
 }
 
-// 🚀 Launch Puppeteer (Render-safe)
+// 🚀 Launch Puppeteer (works both locally & on Render)
 async function launchBrowser() {
   const executablePath = getChromePath();
   console.log("🔍 Using Chrome binary path:", executablePath);
@@ -30,13 +54,20 @@ async function launchBrowser() {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath, // explicitly tell Puppeteer which Chrome binary to use
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      executablePath,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
     });
     console.log("✅ Puppeteer launched successfully");
     return browser;
   } catch (err) {
     console.error("❌ Puppeteer launch failed:", err.message);
+    console.error(
+      "💡 Tip: If running locally, delete node_modules/.puppeteer_cache and reinstall Chrome using:\n   npx puppeteer browsers install chrome --path ./node_modules/.puppeteer_cache"
+    );
     throw err;
   }
 }
@@ -153,7 +184,7 @@ async function fetchRecentFinancialLinks(browser) {
       });
 
       console.log(`✅ Found ${links.size} links so far...`);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000)); // slight delay
     }
 
     console.log(`✅ Total ${links.size} financial/trading links collected.`);
@@ -224,7 +255,7 @@ async function runScraper(backendApiUrl) {
       skippedCount++;
     }
 
-    await new Promise((r) => setTimeout(r, 1500)); // delay
+    await new Promise((r) => setTimeout(r, 1500)); // small delay
   }
 
   await browser.close();
@@ -249,5 +280,6 @@ async function runScraper(backendApiUrl) {
 }
 
 module.exports = { runScraper };
+
 
 
