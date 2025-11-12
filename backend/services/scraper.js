@@ -1,6 +1,45 @@
+// backend/services/scraper.js
+
 const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
 const axios = require("axios");
+const path = require("path");
+
+// 🧭 Debugging information (helpful for Render)
+try {
+  const pkg = require("puppeteer/package.json");
+  console.log("🧭 Puppeteer version:", pkg.version);
+} catch (e) {
+  console.log("⚠️ Puppeteer package info not found:", e.message);
+}
+
+// 🧩 Try to resolve Puppeteer’s local Chrome binary
+function getChromePath() {
+  const chromePath = path.join(
+    __dirname,
+    "../node_modules/.puppeteer_cache/chrome/linux-142.0.7444.61/chrome-linux64/chrome"
+  );
+  return chromePath;
+}
+
+// 🚀 Launch Puppeteer (Render-safe)
+async function launchBrowser() {
+  const executablePath = getChromePath();
+  console.log("🔍 Using Chrome binary path:", executablePath);
+
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath, // explicitly tell Puppeteer which Chrome binary to use
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+    });
+    console.log("✅ Puppeteer launched successfully");
+    return browser;
+  } catch (err) {
+    console.error("❌ Puppeteer launch failed:", err.message);
+    throw err;
+  }
+}
 
 // 🧠 Financial & Trading Keywords
 const FINANCIAL_KEYWORDS = [
@@ -141,10 +180,7 @@ async function runScraper(backendApiUrl) {
   if (oldArticles.deletedCount > 0)
     console.log(`🧹 Cleaned ${oldArticles.deletedCount} old articles`);
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  const browser = await launchBrowser();
 
   const links = await fetchRecentFinancialLinks(browser);
   console.log(`🔗 Total filtered links: ${links.length}`);
@@ -213,4 +249,5 @@ async function runScraper(backendApiUrl) {
 }
 
 module.exports = { runScraper };
+
 
