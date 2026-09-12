@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: feynman-finance-india
+    env: python
+    buildCommand: "pip install -r requirements.txt && python -c 'from db.database import init_db; init_db()'"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.2

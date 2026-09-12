@@ -1,0 +1,27 @@
+name: Feynman Finance Hourly Scraper
+
+on:
+  schedule:
+    # Runs every 1 hour automatically on GitHub's free runners
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Stealth News Scraper
+        run: |
+          python -c "import asyncio; from db.database import init_db; from scraper.news_scraper import run_all_scrapers; init_db(); asyncio.run(run_all_scrapers())"

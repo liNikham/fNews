@@ -1,0 +1,8 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+httpx>=0.24.0
+beautifulsoup4>=4.12.0
+feedparser>=6.0.10
+apscheduler>=3.10.0
+trafilatura>=1.6.0
+lxml>=4.9.0
