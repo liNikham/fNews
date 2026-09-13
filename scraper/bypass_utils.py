@@ -16,26 +16,24 @@ def get_stealth_headers():
 
 async def fetch_page_content(url: str, retries: int = 3) -> str:
     """
-    Fetches content from target URL using stealth HTTP headers, exponential backoff, and retry handling.
-    Inherently avoids rate-limits and anti-bot blocks on cloud servers.
+    Fetches content from target URL using stealth HTTP headers and retry handling.
+    Handles transient network glitches cleanly without spamming connection retry logs.
     """
     for attempt in range(retries):
         headers = get_stealth_headers()
-        async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=12.0) as client:
-            try:
-                # Add random jitter delay between requests to mimic human browsing behavior
-                await asyncio.sleep(random.uniform(0.5, 1.5))
-                
+        try:
+            # Small jitter delay to prevent rate-limit triggers
+            await asyncio.sleep(random.uniform(0.3, 1.0))
+            
+            async with httpx.AsyncClient(headers=headers, follow_redirects=True, timeout=15.0, verify=False) as client:
                 response = await client.get(url)
-                if response.status_code == 200 and len(response.text) > 200:
+                if response.status_code == 200 and len(response.text) > 150:
                     return response.text
                 elif response.status_code in [403, 429, 503]:
-                    print(f"[Stealth Bypass] Code {response.status_code} for {url[:50]}... Retry {attempt + 1}/{retries}")
-                    await asyncio.sleep(2 ** attempt)
-            except Exception as e:
-                print(f"[Stealth Bypass] Connection attempt {attempt + 1} failed for {url[:50]}... Error: {e}")
-                await asyncio.sleep(1.0)
-                
+                    await asyncio.sleep(1.5 * (attempt + 1))
+        except Exception:
+            await asyncio.sleep(1.0)
+            
     return ""
 
 def extract_clean_article_text(html_content: str) -> str:
@@ -45,7 +43,6 @@ def extract_clean_article_text(html_content: str) -> str:
     if not html_content:
         return ""
         
-    # Attempt extraction via trafilatura
     try:
         extracted = trafilatura.extract(html_content, include_comments=False, include_tables=False)
         if extracted and len(extracted.strip()) > 80:
@@ -53,7 +50,6 @@ def extract_clean_article_text(html_content: str) -> str:
     except Exception:
         pass
         
-    # Fallback to BeautifulSoup clean text extraction
     try:
         soup = BeautifulSoup(html_content, 'html.parser')
         for element in soup(["script", "style", "nav", "footer", "header", "aside", "form"]):
