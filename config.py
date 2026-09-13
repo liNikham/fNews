@@ -14,9 +14,9 @@ if os.path.exists(env_file):
                 key, val = line.split("=", 1)
                 os.environ[key.strip()] = val.strip().strip('"').strip("'")
 
-# Gemini API Settings
+# Gemini API Settings - Configured strictly for gemini-3.1-flash-lite
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
 # Scraping settings - Configured for 15-Minute Auto-Refresh!
 SCRAPE_INTERVAL_MINUTES = 15
@@ -87,7 +87,6 @@ NEWS_SOURCES = [
     }
 ]
 
-# Realistic User Agents Pool for Anti-Bot Bypass
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",

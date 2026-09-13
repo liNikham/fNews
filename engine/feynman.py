@@ -14,15 +14,14 @@ def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finan
         try:
             return _generate_with_gemini(title, raw_text, category)
         except Exception as e:
-            print(f"[Feynman Engine] Gemini API call note ({e}), running local Detective Feynman engine fallback...")
+            print(f"[Feynman Engine] Gemini API note ({e}), running local Detective Feynman engine fallback...")
             return _generate_local_feynman(title, raw_text, category)
     else:
         return _generate_local_feynman(title, raw_text, category)
 
 def _generate_with_gemini(title: str, raw_text: str, category: str) -> dict:
     """
-    Uses Gemini API (configured via GEMINI_MODEL) to generate high-depth Feynman First Principles
-    and Financial Detective Wealth Blueprint analysis.
+    Uses Gemini API with primary model 'gemini-3.1-flash-lite' and stable fallbacks.
     """
     system_prompt = f"""
 You are an elite Financial Detective and Wealth Strategist combining Richard Feynman's First Principles teaching method with Warren Buffett & Ray Dalio's practical wealth-building mindset.
@@ -44,13 +43,13 @@ Return STRICT JSON with these exact 8 keys:
 7. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
 8. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
 """
-    model_name = GEMINI_MODEL if GEMINI_MODEL else "gemini-1.5-flash"
+    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
     
-    # Try configured model, fallback to 1.5-flash / 2.0-flash / 3.0 / v1beta
-    urls = [
-        f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}",
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}",
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    # Priority order: gemini-3.1-flash-lite first, then gemini-1.5-flash
+    candidate_models = [
+        clean_model,
+        "gemini-3.1-flash-lite",
+        "gemini-1.5-flash"
     ]
     
     payload = {
@@ -62,7 +61,10 @@ Return STRICT JSON with these exact 8 keys:
     }
     
     last_err = None
-    for url in urls:
+    for model in candidate_models:
+        if not model:
+            continue
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
         try:
             res = httpx.post(url, json=payload, timeout=25.0)
             if res.status_code == 200:
@@ -72,7 +74,7 @@ Return STRICT JSON with these exact 8 keys:
                 parsed['importance_score'] = int(parsed.get('importance_score', 8))
                 return parsed
             else:
-                last_err = f"Status {res.status_code}: {res.text[:100]}"
+                last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
         except Exception as e:
             last_err = str(e)
             
