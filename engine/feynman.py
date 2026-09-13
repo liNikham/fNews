@@ -8,7 +8,7 @@ from engine.jargon_dictionary import find_jargon_in_text, FINANCIAL_JARGON_DB
 def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finance") -> dict:
     """
     Transforms financial news into Richard Feynman First Principles & Financial Detective Wealth Blueprint.
-    Uses Gemini API when API key is present; falls back to local engine.
+    Uses Gemini API (gemini-3.1-flash-lite) when API key is present; falls back to local engine.
     """
     if GEMINI_API_KEY:
         try:
@@ -21,7 +21,7 @@ def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finan
 
 def _generate_with_gemini(title: str, raw_text: str, category: str) -> dict:
     """
-    Uses Gemini API with primary configured model and valid active fallback endpoints.
+    Uses Gemini API with model gemini-3.1-flash-lite.
     """
     system_prompt = f"""
 You are an elite Financial Detective and Wealth Strategist combining Richard Feynman's First Principles teaching method with Warren Buffett & Ray Dalio's practical wealth-building mindset.
@@ -43,14 +43,14 @@ Return STRICT JSON with these exact 8 keys:
 7. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
 8. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
 """
-    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-2.5-flash"
+    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
     
-    # Priority order: clean_model -> gemini-2.5-flash -> gemini-1.5-flash -> gemini-1.5-pro
+    # Active 2026 production models: gemini-3.1-flash-lite first, then gemini-2.5-flash-lite, gemini-2.5-flash
     candidate_models = [
         clean_model,
-        "gemini-2.5-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
+        "gemini-3.1-flash-lite",
+        "gemini-2.5-flash-lite",
+        "gemini-2.5-flash"
     ]
     
     payload = {
@@ -75,7 +75,7 @@ Return STRICT JSON with these exact 8 keys:
                 parsed['importance_score'] = int(parsed.get('importance_score', 8))
                 return parsed
             else:
-                last_err = f"Status {res.status_code} for model {model}"
+                last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
         except Exception as e:
             last_err = str(e)
             
