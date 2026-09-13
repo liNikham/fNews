@@ -8,6 +8,12 @@ from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
 from engine.feynman import generate_feynman_breakdown
 from db.database import article_exists, save_article, record_source_stat, ensure_string
 
+def safe_str(val: str) -> str:
+    """Safe ASCII string representation for console printing."""
+    if not val:
+        return ""
+    return str(val).encode('ascii', 'ignore').decode('ascii')
+
 def clean_html_tags(raw_html: str) -> str:
     """Removes HTML markup from RSS summary strings."""
     if not raw_html:
@@ -21,7 +27,7 @@ async def scrape_single_source(source: dict) -> dict:
     category = source["category"]
     url = source["url"]
     
-    print(f"[News Scraper] Checking {source_name} ({category})...")
+    print(f"[News Scraper] Checking {safe_str(source_name)} ({safe_str(category)})...")
     saved_count = 0
     total_fetched = 0
     
@@ -61,7 +67,7 @@ async def scrape_single_source(source: dict) -> dict:
             
             # Filter low-importance noise
             if importance_score < MIN_IMPORTANCE_SCORE:
-                print(f"[News Scraper] Filtered out low-impact story (Score {importance_score}): {title[:50]}...")
+                print(f"[News Scraper] Filtered out low-impact story (Score {importance_score}): {safe_str(title[:50])}...")
                 continue
                 
             article_record = {
@@ -88,11 +94,11 @@ async def scrape_single_source(source: dict) -> dict:
                 saved_count += 1
                 
     except Exception as e:
-        print(f"[News Scraper] Error checking {source_name}: {e}")
+        print(f"[News Scraper] Exception checking {safe_str(source_name)}: {safe_str(str(e))}")
         
     record_source_stat(source_name, category, total_fetched, saved_count)
     
-    print(f"[News Scraper] {source_name}: {total_fetched} fetched, {saved_count} high-impact stories saved.")
+    print(f"[News Scraper] {safe_str(source_name)}: {total_fetched} fetched, {saved_count} high-impact stories saved.")
     
     return {
         "source_name": source_name,

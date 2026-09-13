@@ -13,16 +13,25 @@ from engine.feynman import generate_feynman_breakdown
 from engine.jargon_dictionary import FINANCIAL_JARGON_DB
 from scheduler.cron_job import start_hourly_scheduler
 
+async def delayed_initial_scrape():
+    """Runs initial news scraping pass 3 seconds AFTER server port is bound, preventing Render port check delay."""
+    await asyncio.sleep(3.0)
+    print("[Server] Executing initial background news scraping cycle...")
+    try:
+        await run_all_scrapers()
+    except Exception as e:
+        print(f"[Server] Note on initial scrape: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[Server] Initializing SQLite database...")
     init_db()
     
-    print("[Server] Starting background hourly news scraper...")
+    print("[Server] Starting background 15-minute news scraper scheduler...")
     start_hourly_scheduler()
     
-    # Run initial scrape in background
-    asyncio.create_task(run_all_scrapers())
+    # Schedule initial scrape asynchronously after uvicorn binds port 0.0.0.0:$PORT
+    asyncio.create_task(delayed_initial_scrape())
     
     yield
     print("[Server] Shutdown complete.")
@@ -30,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Feynman Finance India — Top 5 Wealth Detective Engine",
     description="Automated Indian Financial News Aggregator focusing on Top 5 High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint",
-    version="2.1.0",
+    version="2.2.0",
     lifespan=lifespan
 )
 
@@ -45,12 +54,17 @@ def read_root():
         return FileResponse(index_path)
     return {"message": "Feynman Finance India API Operational"}
 
+@app.get("/health")
+def health_check():
+    """Render / Cloud platform health check endpoint."""
+    return {"status": "ok", "service": "feynman-finance-india"}
+
 @app.get("/api/news")
 def fetch_news(
     category: str = Query("all", description="Category filter"),
     query: str = Query(None, description="Search keyword"),
     page: int = Query(1, ge=1),
-    limit: int = Query(5, ge=1, le=100),  # Defaults strictly to Top 5 most important stories!
+    limit: int = Query(5, ge=1, le=100),
     bookmarked_only: bool = Query(False)
 ):
     offset = (page - 1) * limit
@@ -151,4 +165,5 @@ def fetch_stats():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

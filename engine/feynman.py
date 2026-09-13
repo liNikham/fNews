@@ -21,7 +21,7 @@ def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finan
 
 def _generate_with_gemini(title: str, raw_text: str, category: str) -> dict:
     """
-    Uses Gemini API with primary model 'gemini-3.1-flash-lite' and stable fallbacks.
+    Uses Gemini API with primary configured model and valid active fallback endpoints.
     """
     system_prompt = f"""
 You are an elite Financial Detective and Wealth Strategist combining Richard Feynman's First Principles teaching method with Warren Buffett & Ray Dalio's practical wealth-building mindset.
@@ -43,13 +43,14 @@ Return STRICT JSON with these exact 8 keys:
 7. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
 8. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
 """
-    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
+    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-2.5-flash"
     
-    # Priority order: gemini-3.1-flash-lite first, then gemini-1.5-flash
+    # Priority order: clean_model -> gemini-2.5-flash -> gemini-1.5-flash -> gemini-1.5-pro
     candidate_models = [
         clean_model,
-        "gemini-3.1-flash-lite",
-        "gemini-1.5-flash"
+        "gemini-2.5-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
     ]
     
     payload = {
@@ -74,7 +75,7 @@ Return STRICT JSON with these exact 8 keys:
                 parsed['importance_score'] = int(parsed.get('importance_score', 8))
                 return parsed
             else:
-                last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
+                last_err = f"Status {res.status_code} for model {model}"
         except Exception as e:
             last_err = str(e)
             
