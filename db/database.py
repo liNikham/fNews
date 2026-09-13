@@ -109,14 +109,29 @@ def get_source_stats():
     conn.close()
     return rows
 
+def ensure_string(val) -> str:
+    """Ensures value is converted to a clean string suitable for SQLite binding."""
+    if val is None:
+        return ""
+    if isinstance(val, list):
+        return "\n".join(f"• {item}" if not str(item).startswith("•") else str(item) for item in val)
+    if isinstance(val, dict):
+        return json.dumps(val)
+    return str(val)
+
 def save_article(article_data: dict) -> int:
-    """Save parsed & simplified article into DB."""
+    """Save parsed & simplified article into DB with strict string normalization."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     link_hash = compute_hash(article_data['link'])
-    jargon_json = json.dumps(article_data.get('feynman_jargon', []))
     
+    jargon_val = article_data.get('feynman_jargon', [])
+    if isinstance(jargon_val, list):
+        jargon_json = json.dumps(jargon_val)
+    else:
+        jargon_json = ensure_string(jargon_val)
+        
     try:
         cursor.execute('''
             INSERT INTO articles (
@@ -127,27 +142,30 @@ def save_article(article_data: dict) -> int:
                 detective_loopholes, actionable_blueprint, importance_score
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            article_data['title'],
-            article_data['link'],
+            ensure_string(article_data.get('title', '')),
+            ensure_string(article_data.get('link', '')),
             link_hash,
-            article_data.get('source_name', 'Indian News'),
-            article_data.get('category', 'Finance'),
-            article_data.get('pub_date', ''),
-            article_data.get('raw_summary', ''),
-            article_data.get('content', ''),
-            article_data.get('feynman_eli5', ''),
+            ensure_string(article_data.get('source_name', 'Indian News')),
+            ensure_string(article_data.get('category', 'Finance')),
+            ensure_string(article_data.get('pub_date', '')),
+            ensure_string(article_data.get('raw_summary', '')),
+            ensure_string(article_data.get('content', '')),
+            ensure_string(article_data.get('feynman_eli5', '')),
             jargon_json,
-            article_data.get('feynman_past_context', ''),
-            article_data.get('feynman_future_impact', ''),
-            article_data.get('feynman_connected_news', ''),
-            article_data.get('feynman_money_psychology', ''),
-            article_data.get('detective_loopholes', ''),
-            article_data.get('actionable_blueprint', ''),
-            article_data.get('importance_score', 7)
+            ensure_string(article_data.get('feynman_past_context', '')),
+            ensure_string(article_data.get('feynman_future_impact', '')),
+            ensure_string(article_data.get('feynman_connected_news', '')),
+            ensure_string(article_data.get('feynman_money_psychology', '')),
+            ensure_string(article_data.get('detective_loopholes', '')),
+            ensure_string(article_data.get('actionable_blueprint', '')),
+            int(article_data.get('importance_score', 7))
         ))
         conn.commit()
         article_id = cursor.lastrowid
     except sqlite3.IntegrityError:
+        article_id = -1
+    except Exception as e:
+        print(f"[DB Error] Exception during save_article: {e}")
         article_id = -1
     finally:
         conn.close()
@@ -175,7 +193,6 @@ def get_articles(category=None, query=None, limit=5, offset=0, bookmarked_only=F
         q = f"%{query}%"
         params.extend([q, q, q, q, q, q])
         
-    # Strictly order by highest importance score first, then newest ID
     sql += " ORDER BY importance_score DESC, id DESC LIMIT ? OFFSET ?"
     params.extend([limit, offset])
     

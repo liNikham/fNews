@@ -6,7 +6,7 @@ import re
 from config import NEWS_SOURCES, MAX_ARTICLES_PER_FEED, MIN_IMPORTANCE_SCORE
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
 from engine.feynman import generate_feynman_breakdown
-from db.database import article_exists, save_article, record_source_stat
+from db.database import article_exists, save_article, record_source_stat, ensure_string
 
 def clean_html_tags(raw_html: str) -> str:
     """Removes HTML markup from RSS summary strings."""
@@ -72,14 +72,14 @@ async def scrape_single_source(source: dict) -> dict:
                 "pub_date": pub_date,
                 "raw_summary": summary[:400],
                 "content": content[:2500],
-                "feynman_eli5": feynman_data.get("feynman_eli5", ""),
+                "feynman_eli5": ensure_string(feynman_data.get("feynman_eli5", "")),
                 "feynman_jargon": feynman_data.get("feynman_jargon", []),
-                "feynman_past_context": feynman_data.get("feynman_past_context", ""),
-                "feynman_future_impact": feynman_data.get("feynman_future_impact", ""),
-                "feynman_connected_news": feynman_data.get("feynman_connected_news", ""),
-                "feynman_money_psychology": feynman_data.get("feynman_money_psychology", ""),
-                "detective_loopholes": feynman_data.get("detective_loopholes", ""),
-                "actionable_blueprint": feynman_data.get("actionable_blueprint", ""),
+                "feynman_past_context": ensure_string(feynman_data.get("feynman_past_context", "")),
+                "feynman_future_impact": ensure_string(feynman_data.get("feynman_future_impact", "")),
+                "feynman_connected_news": ensure_string(feynman_data.get("feynman_connected_news", "")),
+                "feynman_money_psychology": ensure_string(feynman_data.get("feynman_money_psychology", "")),
+                "detective_loopholes": ensure_string(feynman_data.get("detective_loopholes", "")),
+                "actionable_blueprint": ensure_string(feynman_data.get("actionable_blueprint", "")),
                 "importance_score": importance_score
             }
             
@@ -90,7 +90,6 @@ async def scrape_single_source(source: dict) -> dict:
     except Exception as e:
         print(f"[News Scraper] Error checking {source_name}: {e}")
         
-    # Record metrics into DB for source-by-source UI report
     record_source_stat(source_name, category, total_fetched, saved_count)
     
     print(f"[News Scraper] {source_name}: {total_fetched} fetched, {saved_count} high-impact stories saved.")
