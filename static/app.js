@@ -2,12 +2,20 @@
 
 let currentCategory = 'all';
 let searchQuery = '';
+let currentLimit = 5; // Strict default limit: Top 5 most critical stories!
 let currentArticles = [];
 let currentModalText = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     loadArticles();
+    
+    // Automatically refresh Top 5 High-Impact news every 15 minutes!
+    setInterval(() => {
+        console.log("[Feynman UI] Running 15-minute automatic news refresh...");
+        loadStats();
+        loadArticles();
+    }, 15 * 60 * 1000);
 });
 
 // Load Aggregate Stats
@@ -16,7 +24,7 @@ async function loadStats() {
         const res = await fetch('/api/stats');
         const data = await res.json();
         if (data.status === 'success') {
-            document.getElementById('statTotalArticles').innerText = data.stats.total_articles || 0;
+            document.getElementById('statTotalArticles').innerText = "Top 5";
         }
     } catch (err) {
         console.error("Error loading stats:", err);
@@ -34,12 +42,12 @@ async function loadArticles() {
     }
 
     try {
-        let url = `/api/news?category=${encodeURIComponent(currentCategory)}&page=1&limit=30`;
+        let url = `/api/news?category=${encodeURIComponent(currentCategory)}&page=1&limit=${currentLimit}`;
         if (searchQuery) {
             url += `&query=${encodeURIComponent(searchQuery)}`;
         }
         if (currentCategory === 'bookmarked') {
-            url = `/api/news?bookmarked_only=true&limit=30`;
+            url = `/api/news?bookmarked_only=true&limit=${currentLimit}`;
             if (searchQuery) url += `&query=${encodeURIComponent(searchQuery)}`;
         }
 
@@ -55,6 +63,19 @@ async function loadArticles() {
         spinner.style.display = 'none';
         grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);"><div style="font-size: 48px; margin-bottom: 12px;">⚠️</div><p>Unable to connect to Feynman Finance server.</p></div>`;
     }
+}
+
+// Toggle between Top 5 view and All Stories view
+function toggleLimitView() {
+    const btn = document.getElementById('toggleLimitBtn');
+    if (currentLimit === 5) {
+        currentLimit = 30;
+        btn.innerText = "Show Top 5 Only ↩";
+    } else {
+        currentLimit = 5;
+        btn.innerText = "View All Stories ➔";
+    }
+    loadArticles();
 }
 
 // Render Articles Grid
@@ -73,29 +94,46 @@ function renderArticlesGrid(articles) {
         return;
     }
 
-    articles.forEach(article => {
+    articles.forEach((article, index) => {
         const card = document.createElement('div');
         card.className = 'news-card';
 
-        // Render jargon pills
         const jargonList = article.feynman_jargon || [];
         const jargonPillsHtml = jargonList.map(j => `<span class="jargon-tag" onclick="event.stopPropagation(); openJargonModal('${escapeHtml(j.term)}')">💡 ${escapeHtml(j.term)}</span>`).join('');
 
         const isBookmarked = article.is_bookmarked === 1;
+        const importance = article.importance_score || 8;
 
         card.innerHTML = `
             <div>
                 <div class="card-top-meta">
                     <span class="badge-cat">${escapeHtml(article.category || 'Finance')}</span>
-                    <span class="source-badge">⚡ ${escapeHtml(article.source_name || 'Indian News')}</span>
+                    <span class="importance-pill">🔥 Top #${index + 1} (Score ${importance}/10)</span>
                 </div>
                 
                 <h3 class="card-headline">${escapeHtml(article.title)}</h3>
 
+                <!-- 1. ELI5 -->
                 <div class="feynman-eli5-card-box">
-                    <div class="eli5-label-header">👶 Feynman ELI5</div>
-                    <div class="eli5-body-text">${escapeHtml(article.feynman_eli5 || article.raw_summary)}</div>
+                    <div class="box-label-header" style="color: var(--emerald);">👶 Feynman ELI5</div>
+                    <div class="box-body-text">${escapeHtml(article.feynman_eli5 || article.raw_summary)}</div>
                 </div>
+
+                <!-- 2. DETECTIVE LOOPHOLES -->
+                ${article.detective_loopholes ? `
+                <div class="detective-card-box">
+                    <div class="box-label-header" style="color: var(--amber);">🕵️‍♂️ Detective Catch / Fine Print</div>
+                    <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.detective_loopholes)}</div>
+                </div>
+                ` : ''}
+
+                <!-- 3. ACTIONABLE BLUEPRINT -->
+                ${article.actionable_blueprint ? `
+                <div class="action-blueprint-card-box">
+                    <div class="box-label-header" style="color: var(--primary);">🎯 Wealth Blueprint (Action to Take)</div>
+                    <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.actionable_blueprint)}</div>
+                </div>
+                ` : ''}
 
                 <div class="jargon-tags-container">
                     ${jargonPillsHtml}
@@ -104,14 +142,14 @@ function renderArticlesGrid(articles) {
 
             <div class="card-bottom-actions">
                 <button class="btn btn-glass" style="font-size: 12.5px; padding: 8px 16px;" onclick="openFeynmanModal(${article.id})">
-                    🧠 Feynman Breakdown
+                    🧠 Full Detective Analysis
                 </button>
 
                 <div class="action-icon-group">
                     <button class="icon-action-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark(${article.id}, this)" title="Bookmark">
                         🔖
                     </button>
-                    <button class="icon-action-btn" onclick="speakText('${escapeHtml(article.title)}. ${escapeHtml(article.feynman_eli5)}')" title="Listen (Read Aloud)">
+                    <button class="icon-action-btn" onclick="speakText('${escapeHtml(article.title)}. ${escapeHtml(article.feynman_eli5)}')" title="Listen Read-Aloud">
                         🔊
                     </button>
                 </div>
@@ -126,7 +164,6 @@ function renderArticlesGrid(articles) {
 function switchCategory(cat, btnElement) {
     currentCategory = cat;
     
-    // Update tab styling
     document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
     if (btnElement) btnElement.classList.add('active');
 
@@ -143,7 +180,7 @@ function setMobileNavActive(btn) {
     if (btn) btn.classList.add('active');
 }
 
-// Handle Live Search
+// Search Handler
 let searchTimeout;
 function handleSearch(e) {
     clearTimeout(searchTimeout);
@@ -174,7 +211,7 @@ async function triggerManualScrape() {
         btn.disabled = false;
 
         if (data.status === 'success') {
-            alert(`🎉 Success! Scraped and simplified ${data.result.total_new} new financial stories!`);
+            alert(`🎉 Success! Scraped ${data.result.total_fetched} stories across 10 sources and saved ${data.result.total_new_saved} high-impact wealth insights!`);
             loadStats();
             loadArticles();
         }
@@ -203,15 +240,72 @@ async function toggleBookmark(articleId, btn) {
     }
 }
 
+// Open Sources Scraping Report Modal
+async function openSourcesReportModal() {
+    const modal = document.getElementById('sourcesReportModal');
+    const container = document.getElementById('sourcesReportTable');
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading source breakdown...</div>`;
+    modal.classList.add('active');
+
+    try {
+        const res = await fetch('/api/sources');
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            container.innerHTML = '';
+            const sources = data.sources || [];
+            
+            if (sources.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted);">No scraping metrics recorded yet. Click 'Sync News' to run!</div>`;
+                return;
+            }
+
+            sources.forEach(s => {
+                const item = document.createElement('div');
+                item.style.background = 'rgba(15, 23, 42, 0.7)';
+                item.style.border = '1px solid var(--border-subtle)';
+                item.style.borderRadius = 'var(--radius-md)';
+                item.style.padding = '14px 18px';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+
+                item.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; color: #ffffff; font-size: 14px;">${escapeHtml(s.source_name)}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Category: ${escapeHtml(s.category)} • Last synced: ${escapeHtml(s.last_scraped_at || 'Recently')}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--emerald);">
+                            ${s.important_saved} High-Impact Saved
+                        </span>
+                        <div style="font-size: 11px; color: var(--text-dim);">(${s.total_fetched} Total Fetched)</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+    } catch (err) {
+        container.innerHTML = `<div style="text-align: center; color: var(--rose);">Error loading sources breakdown.</div>`;
+    }
+}
+
+function closeSourcesReportModal() {
+    document.getElementById('sourcesReportModal').classList.remove('active');
+}
+
 // Open Article Detail Modal
 function openFeynmanModal(articleId) {
     const article = currentArticles.find(a => a.id === articleId);
     if (!article) return;
 
     document.getElementById('modalCategory').innerText = article.category || 'Finance';
+    document.getElementById('modalImportance').innerText = `🔥 Importance: ${article.importance_score || 8}/10`;
     document.getElementById('modalSource').innerText = article.source_name || 'Indian News';
     document.getElementById('modalTitle').innerText = article.title;
     document.getElementById('modalEli5').innerText = article.feynman_eli5 || 'No summary available';
+    document.getElementById('modalDetective').innerText = article.detective_loopholes || 'No fine print caught.';
+    document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'No specific action required.';
 
     // Jargon list
     const jargonContainer = document.getElementById('modalJargonList');
@@ -239,7 +333,6 @@ function openFeynmanModal(articleId) {
     }
 
     document.getElementById('modalPast').innerText = article.feynman_past_context || 'N/A';
-    document.getElementById('modalFuture').innerText = article.feynman_future_impact || 'N/A';
     document.getElementById('modalPsychology').innerText = article.feynman_money_psychology || 'N/A';
     
     const linkBtn = document.getElementById('modalOriginalLink');
@@ -281,7 +374,7 @@ async function processCustomSimplification() {
 
     const modal = document.getElementById('customSimplifierModal');
     const submitBtn = modal.querySelector('button.btn-gradient');
-    submitBtn.innerText = "⏳ Scraping & Simplifying with Feynman...";
+    submitBtn.innerText = "⏳ Analyzing like a Detective with Gemini AI...";
     submitBtn.disabled = true;
 
     try {
@@ -300,7 +393,7 @@ async function processCustomSimplification() {
         });
 
         const data = await res.json();
-        submitBtn.innerText = "🚀 Simplify with Feynman First-Principles";
+        submitBtn.innerText = "🚀 Generate Detective Wealth Blueprint";
         submitBtn.disabled = false;
 
         if (data.status === 'success') {
@@ -310,12 +403,12 @@ async function processCustomSimplification() {
             
             loadStats();
             await loadArticles();
-            alert("✨ Article simplified and added to your feed!");
+            alert("✨ Article analyzed and added to your wealth feed!");
         } else {
             alert(data.detail || "Could not simplify article.");
         }
     } catch (err) {
-        submitBtn.innerText = "🚀 Simplify with Feynman First-Principles";
+        submitBtn.innerText = "🚀 Generate Detective Wealth Blueprint";
         submitBtn.disabled = false;
         alert("Server error simplifying article.");
     }
@@ -357,8 +450,8 @@ async function loadJargonDictionaryView(query = '') {
                     <h3 class="card-headline" style="color: #c084fc;">🧩 ${escapeHtml(t.term)}</h3>
 
                     <div class="feynman-eli5-card-box" style="border-left-color: var(--purple);">
-                        <div class="eli5-label-header" style="color: var(--purple);">👶 Feynman Definition</div>
-                        <div class="eli5-body-text">${escapeHtml(t.eli5)}</div>
+                        <div class="box-label-header" style="color: var(--purple);">👶 Feynman Definition</div>
+                        <div class="box-body-text">${escapeHtml(t.eli5)}</div>
                     </div>
 
                     <div style="font-size: 12.5px; color: #cbd5e1; font-style: italic; background: rgba(168, 85, 247, 0.1); padding: 10px 14px; border-radius: var(--radius-md);">

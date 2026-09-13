@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feynman Finance India — Indian Markets in Simple English</title>
-    <meta name="description" content="Automated Indian financial news aggregator that simplifies stock markets, RBI policies, banking, savings, and macroeconomics using Richard Feynman First Principles.">
+    <title>Feynman Finance India — Top 5 Wealth Detective Engine</title>
+    <meta name="description" content="Automated Indian financial news engine focusing strictly on the Top 5 High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint.">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 </head>
@@ -15,12 +15,10 @@
         <!-- HEADER NAVBAR -->
         <header class="header">
             <a href="#" class="brand">
-                <div class="brand-icon-wrapper">
-                    <div class="brand-logo">🧠</div>
-                </div>
+                <div class="brand-logo">🧠</div>
                 <div>
                     <h1 class="brand-title">Feynman Finance</h1>
-                    <div class="brand-tagline">First-Principles Indian Markets</div>
+                    <div class="brand-tagline">Top 5 Financial Detective Stories</div>
                 </div>
             </a>
             
@@ -36,15 +34,15 @@
 
         <!-- DASHBOARD STATS BANNER -->
         <section class="stats-banner">
-            <div class="stat-widget" style="border-left-color: #3b82f6;">
-                <div class="stat-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">📰</div>
+            <div class="stat-widget" style="border-left: 4px solid #3b82f6;">
+                <div class="stat-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔥</div>
                 <div>
-                    <div class="stat-value" id="statTotalArticles">--</div>
-                    <div class="stat-desc">Simplified News</div>
+                    <div class="stat-value" id="statTotalArticles">Top 5</div>
+                    <div class="stat-desc">Most Critical Stories</div>
                 </div>
             </div>
             
-            <div class="stat-widget" style="border-left-color: #a855f7;">
+            <div class="stat-widget" style="border-left: 4px solid #a855f7;">
                 <div class="stat-icon-box" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🧩</div>
                 <div>
                     <div class="stat-value" id="statJargonCount">100+</div>
@@ -52,34 +50,33 @@
                 </div>
             </div>
 
-            <div class="stat-widget" style="border-left-color: #10b981;">
-                <div class="stat-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🌐</div>
+            <!-- Clickable Sources Stat Card -->
+            <div class="stat-widget" style="border-left: 4px solid #10b981;" onclick="openSourcesReportModal()" title="Click to view source-by-source scraping breakdown">
+                <div class="stat-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">📊</div>
                 <div>
                     <div class="stat-value">10 Sources</div>
-                    <div class="stat-desc">ET, Moneycontrol, Mint</div>
+                    <div class="stat-desc">View Scraped Breakdown ↗</div>
                 </div>
             </div>
 
-            <div class="stat-widget" style="border-left-color: #f59e0b;">
+            <div class="stat-widget" style="border-left: 4px solid #f59e0b;">
                 <div class="stat-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">⚡</div>
                 <div>
-                    <div class="stat-value">Hourly</div>
-                    <div class="stat-desc">Auto Stealth Sync</div>
+                    <div class="stat-value">Every 15m</div>
+                    <div class="stat-desc">Auto 15-Min Live Refresh</div>
                 </div>
             </div>
         </section>
 
-        <!-- TOOLBAR: CATEGORY NAVIGATION & SEARCH -->
+        <!-- TOOLBAR: SEARCH & CATEGORY NAVIGATION -->
         <section class="toolbar-section">
-            <div class="toolbar-top">
-                <div class="search-field-container">
-                    <span class="search-field-icon">🔍</span>
-                    <input type="text" class="search-field" id="searchInput" placeholder="Search Nifty, RBI, Repo Rate, FD, Stocks..." onkeyup="handleSearch(event)">
-                </div>
+            <div class="search-field-container">
+                <span class="search-field-icon">🔍</span>
+                <input type="text" class="search-field" id="searchInput" placeholder="Search Nifty, RBI, Repo Rate, Loans, Taxes, Stocks..." onkeyup="handleSearch(event)">
             </div>
 
             <div class="categories-scroll" id="categoryTabs">
-                <button class="cat-pill active" onclick="switchCategory('all', this)">🌐 All Stories</button>
+                <button class="cat-pill active" onclick="switchCategory('all', this)">🔥 Top 5 Critical Stories</button>
                 <button class="cat-pill" onclick="switchCategory('Stocks & Equity', this)">📈 Stocks & Equity</button>
                 <button class="cat-pill" onclick="switchCategory('Banking & RBI', this)">🏦 Banking & RBI</button>
                 <button class="cat-pill" onclick="switchCategory('Economy & Policy', this)">📊 Economy & Policy</button>
@@ -91,8 +88,23 @@
 
         <!-- MAIN CARDS CONTAINER -->
         <main id="mainContent">
+            <!-- SECTION HEADER BANNER -->
+            <div id="sectionHeaderBanner" style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%); border-left: 4px solid var(--amber); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 16px; color: var(--amber); display: flex; align-items: center; gap: 8px;">
+                        🔥 TOP 5 HIGH-IMPACT STORIES FOR YOUR WEALTH
+                    </h3>
+                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                        Automatically refreshed every 15 minutes by Financial Detective AI across 10 top Indian news sources.
+                    </p>
+                </div>
+                <button class="btn btn-glass" style="font-size: 12px; padding: 6px 14px;" id="toggleLimitBtn" onclick="toggleLimitView()">
+                    View All Stories ➔
+                </button>
+            </div>
+
             <div id="articlesGrid" class="news-cards-grid">
-                <!-- Cards dynamically injected here -->
+                <!-- Top 5 Cards dynamically injected here -->
             </div>
             
             <div id="loadingSpinner" class="spinner" style="display: none;"></div>
@@ -100,25 +112,56 @@
 
     </div>
 
-    <!-- FEYNMAN ARTICLE DETAIL MODAL SHEET -->
+    <!-- SOURCE SCRAPING BREAKDOWN REPORT MODAL -->
+    <div class="modal-backdrop" id="sourcesReportModal">
+        <div class="modal-container" style="max-width: 720px;">
+            <button class="modal-close-btn" onclick="closeSourcesReportModal()">✕</button>
+            
+            <h2 style="margin-bottom: 6px; font-size: 22px;">📊 15-Minute Source-Wise Scraping Breakdown</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Detailed statistics showing how many news articles were fetched from each news publisher every 15 minutes and how many high-impact stories were saved.
+            </p>
+
+            <div id="sourcesReportTable" style="display: grid; gap: 10px; max-height: 60vh; overflow-y: auto;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FEYNMAN DETECTIVE ARTICLE DETAIL MODAL SHEET -->
     <div class="modal-backdrop" id="feynmanModal">
         <div class="modal-container">
             <button class="modal-close-btn" onclick="closeFeynmanModal()">✕</button>
             
             <div style="margin-bottom: 20px; padding-right: 40px;">
-                <span class="badge-cat" id="modalCategory">Category</span>
-                <span style="font-size: 12px; color: var(--text-dim); margin-left: 10px;" id="modalSource">Source</span>
-                <h2 id="modalTitle" style="margin-top: 10px; font-size: 22px; line-height: 1.35;">Article Title</h2>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+                    <span class="badge-cat" id="modalCategory">Category</span>
+                    <span class="importance-pill" id="modalImportance">Importance: 9/10</span>
+                    <span style="font-size: 12px; color: var(--text-dim);" id="modalSource">Source</span>
+                </div>
+                <h2 id="modalTitle" style="font-size: 22px; line-height: 1.35;">Article Title</h2>
             </div>
 
             <div>
                 <!-- 1. ELI5 -->
                 <div class="feynman-modal-section sec-eli5">
-                    <div class="section-head">👶 Explain Like I'm 5 (Feynman Summary)</div>
+                    <div class="section-head">👶 Explain Like I'm 5 (Feynman First Principles)</div>
                     <div style="font-size: 14.5px; color: #e2e8f0; line-height: 1.6;" id="modalEli5">Summary...</div>
                 </div>
 
-                <!-- 2. JARGON DECODER -->
+                <!-- 2. DETECTIVE ANALYSIS & HIDDEN LOOPHOLES -->
+                <div class="feynman-modal-section sec-detective">
+                    <div class="section-head">🕵️‍♂️ Financial Detective Analysis & Hidden Loopholes</div>
+                    <div style="font-size: 14px; color: #fef08a; white-space: pre-line; line-height: 1.6;" id="modalDetective">Detective analysis...</div>
+                </div>
+
+                <!-- 3. ACTIONABLE WEALTH BLUEPRINT -->
+                <div class="feynman-modal-section sec-blueprint">
+                    <div class="section-head">🎯 Actionable Wealth Blueprint (How to Use This Info to Become Rich)</div>
+                    <div style="font-size: 14px; color: #bfdbfe; white-space: pre-line; line-height: 1.6;" id="modalBlueprint">Action blueprint...</div>
+                </div>
+
+                <!-- 4. JARGON DECODER -->
                 <div class="feynman-modal-section sec-jargon">
                     <div class="section-head">🧩 Financial Terms Decoded</div>
                     <div id="modalJargonList">
@@ -126,21 +169,15 @@
                     </div>
                 </div>
 
-                <!-- 3. PAST CONTEXT -->
+                <!-- 5. PAST CONTEXT -->
                 <div class="feynman-modal-section sec-past">
                     <div class="section-head">📜 Past Context & Root Cause (Why Now?)</div>
                     <div style="font-size: 14px; color: #cbd5e1; line-height: 1.55;" id="modalPast">Context...</div>
                 </div>
 
-                <!-- 4. FUTURE IMPACT -->
-                <div class="feynman-modal-section sec-future">
-                    <div class="section-head">🔮 Future Impact & Domino Effect (Your Wallet & Portfolio)</div>
-                    <div style="font-size: 14px; color: #cbd5e1; white-space: pre-line; line-height: 1.55;" id="modalFuture">Future impact...</div>
-                </div>
-
-                <!-- 5. MONEY PSYCHOLOGY -->
+                <!-- 6. MONEY PSYCHOLOGY -->
                 <div class="feynman-modal-section sec-psychology">
-                    <div class="section-head">🧠 Money Psychology & Investor Takeaway</div>
+                    <div class="section-head">🧠 Money Psychology & Investor Mindset</div>
                     <div style="font-size: 14px; color: #fecdd3; line-height: 1.55;" id="modalPsychology">Psychology tip...</div>
                 </div>
             </div>
@@ -159,7 +196,7 @@
             
             <h2 style="margin-bottom: 8px; font-size: 22px;">✨ Simplify Any Web Article</h2>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 22px;">
-                Paste any news link from Moneycontrol, ET, LiveMint, Reuters, or raw financial text. Our stealth scraper bypasses anti-bot screens to give you 100% simple English.
+                Paste any news link from Moneycontrol, ET, LiveMint, Reuters, or raw text. Our Financial Detective Engine will analyze it using Feynman principles and generate your wealth blueprint.
             </p>
 
             <div style="margin-bottom: 16px;">
@@ -185,7 +222,7 @@
             </div>
 
             <button class="btn btn-gradient" style="width: 100%; padding: 14px;" onclick="processCustomSimplification()">
-                🚀 Simplify with Feynman First-Principles
+                🚀 Generate Detective Wealth Blueprint
             </button>
         </div>
     </div>
@@ -193,16 +230,16 @@
     <!-- MOBILE BOTTOM NAVIGATION -->
     <nav class="mobile-bottom-nav">
         <button class="nav-item-btn active" onclick="switchCategory('all'); setMobileNavActive(this)">
-            <span class="nav-item-icon">🌐</span>
-            <span>Home</span>
+            <span class="nav-item-icon">🔥</span>
+            <span>Top 5</span>
         </button>
         <button class="nav-item-btn" onclick="switchCategory('Stocks & Equity'); setMobileNavActive(this)">
             <span class="nav-item-icon">📈</span>
             <span>Stocks</span>
         </button>
-        <button class="nav-item-btn" onclick="switchCategory('Banking & RBI'); setMobileNavActive(this)">
-            <span class="nav-item-icon">🏦</span>
-            <span>Banking</span>
+        <button class="nav-item-btn" onclick="openSourcesReportModal()">
+            <span class="nav-item-icon">📊</span>
+            <span>Sources</span>
         </button>
         <button class="nav-item-btn" onclick="switchCategory('bookmarked'); setMobileNavActive(this)">
             <span class="nav-item-icon">🔖</span>

@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from db.database import init_db, get_articles, toggle_bookmark, get_stats, save_article
+from db.database import init_db, get_articles, toggle_bookmark, get_stats, save_article, get_source_stats
 from scraper.news_scraper import run_all_scrapers
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
 from engine.feynman import generate_feynman_breakdown
@@ -15,48 +15,44 @@ from scheduler.cron_job import start_hourly_scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup actions
     print("[Server] Initializing SQLite database...")
     init_db()
     
     print("[Server] Starting background hourly news scraper...")
     start_hourly_scheduler()
     
-    # Run initial scrape in background task so server starts immediately
+    # Run initial scrape in background
     asyncio.create_task(run_all_scrapers())
     
     yield
     print("[Server] Shutdown complete.")
 
 app = FastAPI(
-    title="Feynman Indian Financial News Engine",
-    description="Automated Indian Financial News Aggregator with Richard Feynman First Principles Breakdown",
-    version="1.0.0",
+    title="Feynman Finance India — Top 5 Wealth Detective Engine",
+    description="Automated Indian Financial News Aggregator focusing on Top 5 High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint",
+    version="2.1.0",
     lifespan=lifespan
 )
 
-# Mount static assets
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 @app.get("/")
 def read_root():
-    """Serves the main Feynman News Dashboard."""
     index_path = os.path.join(static_dir, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"message": "Feynman Indian Financial News Engine API operational"}
+    return {"message": "Feynman Finance India API Operational"}
 
 @app.get("/api/news")
 def fetch_news(
     category: str = Query("all", description="Category filter"),
     query: str = Query(None, description="Search keyword"),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(5, ge=1, le=100),  # Defaults strictly to Top 5 most important stories!
     bookmarked_only: bool = Query(False)
 ):
-    """Retrieve simplified news articles from DB."""
     offset = (page - 1) * limit
     articles = get_articles(
         category=category,
@@ -69,7 +65,6 @@ def fetch_news(
 
 @app.post("/api/scrape/now")
 async def trigger_manual_scrape():
-    """Manually trigger immediate news scraping across all sources."""
     result = await run_all_scrapers()
     return {"status": "success", "message": "Scraping completed", "result": result}
 
@@ -79,10 +74,6 @@ class SimplifyUrlRequest(BaseModel):
 
 @app.post("/api/simplify-url")
 async def simplify_custom_url(req: SimplifyUrlRequest):
-    """
-    Scrapes ANY financial news URL provided by the user (bypassing anti-bot blocks),
-    extracts content, and generates Feynman first-principles breakdown.
-    """
     if not req.url or not req.url.startswith("http"):
         raise HTTPException(status_code=400, detail="Invalid URL provided")
         
@@ -94,7 +85,6 @@ async def simplify_custom_url(req: SimplifyUrlRequest):
     if not article_text:
         raise HTTPException(status_code=400, detail="Could not extract readable article text")
         
-    # Extract title from text or URL
     lines = [l.strip() for l in article_text.split("\n") if l.strip()]
     title = lines[0] if lines else "Custom Article Analysis"
     if len(title) > 120:
@@ -105,17 +95,20 @@ async def simplify_custom_url(req: SimplifyUrlRequest):
     article_record = {
         "title": title,
         "link": req.url,
-        "source_name": "Custom Web URL",
+        "source_name": "Custom Web Link",
         "category": req.category,
         "pub_date": "Just Now",
         "raw_summary": article_text[:400],
-        "content": article_text[:2000],
-        "feynman_eli5": feynman_breakdown["feynman_eli5"],
-        "feynman_jargon": feynman_breakdown["feynman_jargon"],
-        "feynman_past_context": feynman_breakdown["feynman_past_context"],
-        "feynman_future_impact": feynman_breakdown["feynman_future_impact"],
-        "feynman_connected_news": feynman_breakdown["feynman_connected_news"],
-        "feynman_money_psychology": feynman_breakdown["feynman_money_psychology"]
+        "content": article_text[:2500],
+        "feynman_eli5": feynman_breakdown.get("feynman_eli5", ""),
+        "feynman_jargon": feynman_breakdown.get("feynman_jargon", []),
+        "feynman_past_context": feynman_breakdown.get("feynman_past_context", ""),
+        "feynman_future_impact": feynman_breakdown.get("feynman_future_impact", ""),
+        "feynman_connected_news": feynman_breakdown.get("feynman_connected_news", ""),
+        "feynman_money_psychology": feynman_breakdown.get("feynman_money_psychology", ""),
+        "detective_loopholes": feynman_breakdown.get("detective_loopholes", ""),
+        "actionable_blueprint": feynman_breakdown.get("actionable_blueprint", ""),
+        "importance_score": feynman_breakdown.get("importance_score", 9)
     }
     
     save_article(article_record)
@@ -128,31 +121,32 @@ class SimplifyTextRequest(BaseModel):
 
 @app.post("/api/simplify-text")
 def simplify_custom_text(req: SimplifyTextRequest):
-    """Generates Feynman simplification for custom raw text."""
     if not req.text:
         raise HTTPException(status_code=400, detail="Text body is required")
         
-    feynman_breakdown = generate_feynman_breakdown(req.title or "Financial News", req.text, req.category)
+    feynman_breakdown = generate_feynman_breakdown(req.title or "Financial Article", req.text, req.category)
     return {"status": "success", "data": feynman_breakdown}
 
 @app.post("/api/bookmark/{article_id}")
 def bookmark_article(article_id: int):
-    """Toggle article bookmark status."""
     new_state = toggle_bookmark(article_id)
     return {"status": "success", "article_id": article_id, "is_bookmarked": new_state}
 
 @app.get("/api/jargon")
 def search_jargon(query: str = None):
-    """Search or list terms in the Feynman Jargon Dictionary."""
     terms = list(FINANCIAL_JARGON_DB.values())
     if query:
         q = query.lower()
         terms = [t for t in terms if q in t["term"].lower() or q in t["eli5"].lower() or q in t["category"].lower()]
     return {"status": "success", "count": len(terms), "terms": terms}
 
+@app.get("/api/sources")
+def fetch_sources_report():
+    stats = get_source_stats()
+    return {"status": "success", "sources": stats}
+
 @app.get("/api/stats")
 def fetch_stats():
-    """Get dashboard stats."""
     return {"status": "success", "stats": get_stats()}
 
 if __name__ == "__main__":

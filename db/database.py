@@ -1,14 +1,15 @@
 import sqlite3
 import json
 import hashlib
-
+import datetime
 from config import DB_PATH
 
 def init_db():
-    """Initialize SQLite database schema."""
+    """Initialize SQLite database schema and migrate missing columns."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
+    # Primary articles table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS articles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,14 +27,40 @@ def init_db():
             feynman_future_impact TEXT,
             feynman_connected_news TEXT,
             feynman_money_psychology TEXT,
+            detective_loopholes TEXT,
+            actionable_blueprint TEXT,
+            importance_score INTEGER DEFAULT 7,
             is_bookmarked INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
-    # Create indexes for fast querying
+    # Source-wise hourly scraping stats table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS source_scrape_stats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_name TEXT UNIQUE NOT NULL,
+            category TEXT,
+            total_fetched INTEGER DEFAULT 0,
+            important_saved INTEGER DEFAULT 0,
+            last_scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Auto-migration for existing databases
+    cursor.execute("PRAGMA table_info(articles)")
+    columns = [col[1] for col in cursor.fetchall()]
+    
+    if "detective_loopholes" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN detective_loopholes TEXT")
+    if "actionable_blueprint" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN actionable_blueprint TEXT")
+    if "importance_score" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN importance_score INTEGER DEFAULT 7")
+
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_category ON articles(category)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_created_at ON articles(created_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_importance ON articles(importance_score)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_hash ON articles(link_hash)')
     
     conn.commit()
@@ -53,6 +80,35 @@ def article_exists(link: str) -> bool:
     conn.close()
     return exists
 
+def record_source_stat(source_name: str, category: str, total_fetched: int, important_saved: int):
+    """Upsert source-wise scraping metrics."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    cursor.execute('''
+        INSERT INTO source_scrape_stats (source_name, category, total_fetched, important_saved, last_scraped_at)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(source_name) DO UPDATE SET
+            total_fetched = excluded.total_fetched,
+            important_saved = excluded.important_saved,
+            last_scraped_at = excluded.last_scraped_at
+    ''', (source_name, category, total_fetched, important_saved, now_str))
+    
+    conn.commit()
+    conn.close()
+
+def get_source_stats():
+    """Retrieve latest source-wise scraping breakdown."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM source_scrape_stats ORDER BY total_fetched DESC')
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
 def save_article(article_data: dict) -> int:
     """Save parsed & simplified article into DB."""
     conn = sqlite3.connect(DB_PATH)
@@ -67,8 +123,9 @@ def save_article(article_data: dict) -> int:
                 title, link, link_hash, source_name, category, pub_date,
                 raw_summary, content, feynman_eli5, feynman_jargon,
                 feynman_past_context, feynman_future_impact,
-                feynman_connected_news, feynman_money_psychology
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                feynman_connected_news, feynman_money_psychology,
+                detective_loopholes, actionable_blueprint, importance_score
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             article_data['title'],
             article_data['link'],
@@ -83,7 +140,10 @@ def save_article(article_data: dict) -> int:
             article_data.get('feynman_past_context', ''),
             article_data.get('feynman_future_impact', ''),
             article_data.get('feynman_connected_news', ''),
-            article_data.get('feynman_money_psychology', '')
+            article_data.get('feynman_money_psychology', ''),
+            article_data.get('detective_loopholes', ''),
+            article_data.get('actionable_blueprint', ''),
+            article_data.get('importance_score', 7)
         ))
         conn.commit()
         article_id = cursor.lastrowid
@@ -94,8 +154,8 @@ def save_article(article_data: dict) -> int:
         
     return article_id
 
-def get_articles(category=None, query=None, limit=20, offset=0, bookmarked_only=False):
-    """Retrieve articles with optional filtering and search."""
+def get_articles(category=None, query=None, limit=5, offset=0, bookmarked_only=False):
+    """Retrieve top articles ordered by highest importance_score and recency."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -111,11 +171,12 @@ def get_articles(category=None, query=None, limit=20, offset=0, bookmarked_only=
         sql += " AND is_bookmarked = 1"
         
     if query:
-        sql += " AND (title LIKE ? OR feynman_eli5 LIKE ? OR raw_summary LIKE ? OR feynman_jargon LIKE ?)"
+        sql += " AND (title LIKE ? OR feynman_eli5 LIKE ? OR raw_summary LIKE ? OR feynman_jargon LIKE ? OR detective_loopholes LIKE ? OR actionable_blueprint LIKE ?)"
         q = f"%{query}%"
-        params.extend([q, q, q, q])
+        params.extend([q, q, q, q, q, q])
         
-    sql += " ORDER BY id DESC LIMIT ? OFFSET ?"
+    # Strictly order by highest importance score first, then newest ID
+    sql += " ORDER BY importance_score DESC, id DESC LIMIT ? OFFSET ?"
     params.extend([limit, offset])
     
     cursor.execute(sql, params)
@@ -145,7 +206,7 @@ def toggle_bookmark(article_id: int):
     return row[0] if row else 0
 
 def get_stats():
-    """Get aggregate statistics for the dashboard."""
+    """Get aggregate statistics for dashboard."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -159,8 +220,12 @@ def get_stats():
     total_bookmarks = cursor.fetchone()[0]
     
     conn.close()
+    
+    source_stats = get_source_stats()
+    
     return {
         "total_articles": total_articles,
         "category_counts": category_counts,
-        "total_bookmarks": total_bookmarks
+        "total_bookmarks": total_bookmarks,
+        "source_stats": source_stats
     }

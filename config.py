@@ -4,9 +4,24 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "db", "news_feynman.db")
 
-# Scraping settings
-SCRAPE_INTERVAL_HOURS = 1
-MAX_ARTICLES_PER_FEED = 10
+# Load environment variables from .env file if it exists
+env_file = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_file):
+    with open(env_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, val = line.split("=", 1)
+                os.environ[key.strip()] = val.strip().strip('"').strip("'")
+
+# Gemini API Settings
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+
+# Scraping settings - Configured for 15-Minute Auto-Refresh!
+SCRAPE_INTERVAL_MINUTES = 15
+MAX_ARTICLES_PER_FEED = 12
+MIN_IMPORTANCE_SCORE = 6  # Only keep high-impact news that affects daily life & wealth!
 
 # Indian Financial News Sources (RSS feeds & Direct Stealth Targets)
 NEWS_SOURCES = [
