@@ -28,7 +28,7 @@ async def delayed_initial_scrape():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[Server] Initializing SQLite database...")
-    init_db()
+    await asyncio.to_thread(init_db)
     
     print("[Server] Starting background 15-minute news scraper scheduler...")
     start_hourly_scheduler()

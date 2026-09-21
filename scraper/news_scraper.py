@@ -34,9 +34,9 @@ async def scrape_single_source(source: dict) -> dict:
     try:
         raw_xml = await fetch_page_content(url)
         if not raw_xml:
-            feed = feedparser.parse(url)
+            feed = await asyncio.to_thread(feedparser.parse, url)
         else:
-            feed = feedparser.parse(raw_xml)
+            feed = await asyncio.to_thread(feedparser.parse, raw_xml)
             
         entries = feed.entries[:MAX_ARTICLES_PER_FEED]
         total_fetched = len(entries)
@@ -48,7 +48,8 @@ async def scrape_single_source(source: dict) -> dict:
             if not title or not link:
                 continue
                 
-            if article_exists(link):
+            exists = await asyncio.to_thread(article_exists, link)
+            if exists:
                 continue
                 
             summary = clean_html_tags(getattr(entry, 'summary', getattr(entry, 'description', '')))
@@ -61,8 +62,8 @@ async def scrape_single_source(source: dict) -> dict:
                 if extracted_body:
                     content = extracted_body
                     
-            # Process via Financial Detective Feynman Engine
-            feynman_data = generate_feynman_breakdown(title, content, category)
+            # Process via Financial Detective Feynman Engine offloaded to threadpool
+            feynman_data = await asyncio.to_thread(generate_feynman_breakdown, title, content, category)
             importance_score = feynman_data.get("importance_score", 7)
             
             # Filter low-importance noise
@@ -89,14 +90,14 @@ async def scrape_single_source(source: dict) -> dict:
                 "importance_score": importance_score
             }
             
-            res_id = save_article(article_record)
+            res_id = await asyncio.to_thread(save_article, article_record)
             if res_id > 0:
                 saved_count += 1
                 
     except Exception as e:
         print(f"[News Scraper] Exception checking {safe_str(source_name)}: {safe_str(str(e))}")
         
-    record_source_stat(source_name, category, total_fetched, saved_count)
+    await asyncio.to_thread(record_source_stat, source_name, category, total_fetched, saved_count)
     
     print(f"[News Scraper] {safe_str(source_name)}: {total_fetched} fetched, {saved_count} high-impact stories saved.")
     
