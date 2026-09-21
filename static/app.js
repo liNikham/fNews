@@ -2,7 +2,7 @@
 
 let currentCategory = 'all';
 let searchQuery = '';
-let currentLimit = 5; // Strict default limit: Top 5 most critical stories!
+let currentLimit = 10; // Strict default limit: Top 10 unread critical stories!
 let currentArticles = [];
 let currentModalText = '';
 
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     loadArticles();
     
-    // Automatically refresh Top 5 High-Impact news every 15 minutes!
+    // Automatically refresh Top 10 High-Impact news every 15 minutes!
     setInterval(() => {
         console.log("[Feynman UI] Running 15-minute automatic news refresh...");
         loadStats();
@@ -24,7 +24,7 @@ async function loadStats() {
         const res = await fetch('/api/stats');
         const data = await res.json();
         if (data.status === 'success') {
-            document.getElementById('statTotalArticles').innerText = "Top 5";
+            document.getElementById('statTotalArticles').innerText = "Top 10";
         }
     } catch (err) {
         console.error("Error loading stats:", err);
@@ -65,17 +65,37 @@ async function loadArticles() {
     }
 }
 
-// Toggle between Top 5 view and All Stories view
+// Toggle between Top 10 view and All Stories view
 function toggleLimitView() {
     const btn = document.getElementById('toggleLimitBtn');
-    if (currentLimit === 5) {
-        currentLimit = 30;
-        btn.innerText = "Show Top 5 Only ↩";
+    if (currentLimit === 10) {
+        currentLimit = 50;
+        btn.innerText = "Show Top 10 Only ↩";
     } else {
-        currentLimit = 5;
+        currentLimit = 10;
         btn.innerText = "View All Stories ➔";
     }
     loadArticles();
+}
+
+// Mark Article as Read -> Auto-pulls next unread story into Top 10!
+async function markAsRead(articleId, cardElement) {
+    if (cardElement) {
+        cardElement.classList.add('read-fade');
+    }
+    
+    try {
+        const res = await fetch(`/api/read/${articleId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+            setTimeout(async () => {
+                await loadStats();
+                await loadArticles();
+            }, 300);
+        }
+    } catch (err) {
+        console.error("Error marking article as read:", err);
+    }
 }
 
 // Render Articles Grid
@@ -86,9 +106,9 @@ function renderArticlesGrid(articles) {
     if (!articles || articles.length === 0) {
         grid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
-                <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
-                <h3 style="font-size: 20px; color: var(--text-primary);">No news stories found</h3>
-                <p style="margin-top: 8px;">Try clicking "Sync News" or simplifying a custom news link!</p>
+                <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+                <h3 style="font-size: 20px; color: var(--text-primary);">You're all caught up!</h3>
+                <p style="margin-top: 8px;">All Top 10 stories have been read. Click "Sync News" or "Scraped Log" to check all news!</p>
             </div>
         `;
         return;
@@ -141,11 +161,14 @@ function renderArticlesGrid(articles) {
             </div>
 
             <div class="card-bottom-actions">
-                <button class="btn btn-glass" style="font-size: 12.5px; padding: 8px 16px;" onclick="openFeynmanModal(${article.id})">
-                    🧠 Full Detective Analysis
+                <button class="btn btn-read" style="font-size: 12px; padding: 7px 14px;" onclick="markAsRead(${article.id}, this.closest('.news-card'))" title="Mark as Read so next unread story moves up into Top 10">
+                    ✔ Mark as Read
                 </button>
 
                 <div class="action-icon-group">
+                    <button class="icon-action-btn" onclick="openFeynmanModal(${article.id})" title="Full Detective Analysis">
+                        🧠
+                    </button>
                     <button class="icon-action-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark(${article.id}, this)" title="Bookmark">
                         🔖
                     </button>
@@ -238,6 +261,66 @@ async function toggleBookmark(articleId, btn) {
     } catch (err) {
         console.error("Bookmark toggle failed:", err);
     }
+}
+
+// Open Raw Scraped Feed Modal (Transparent Timeline of All Scraped News)
+async function openRawFeedModal() {
+    const modal = document.getElementById('rawFeedModal');
+    const container = document.getElementById('rawFeedList');
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">Loading raw scraped feed history...</div>`;
+    modal.classList.add('active');
+
+    try {
+        const res = await fetch('/api/raw-feed?limit=50');
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            container.innerHTML = '';
+            const feed = data.raw_feed || [];
+            
+            if (feed.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No scraped news recorded yet. Click 'Sync News' to pull fresh articles!</div>`;
+                return;
+            }
+
+            feed.forEach((item, i) => {
+                const row = document.createElement('div');
+                row.style.background = 'rgba(15, 23, 42, 0.7)';
+                row.style.border = '1px solid var(--border-subtle)';
+                row.style.borderRadius = 'var(--radius-md)';
+                row.style.padding = '14px 18px';
+
+                const isReadStr = item.is_read ? '✔ Read' : '🔥 Unread';
+
+                row.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span class="badge-cat" style="font-size: 10px;">${escapeHtml(item.source_name || 'Publisher')}</span>
+                        <span style="font-size: 11px; color: var(--text-dim);">${escapeHtml(item.pub_date || item.created_at || 'Recently')} • ${isReadStr}</span>
+                    </div>
+                    
+                    <h4 style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">${escapeHtml(item.title)}</h4>
+                    
+                    <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
+                        ${escapeHtml(item.raw_summary || item.title)}
+                    </p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                        <span style="font-size: 11px; color: var(--amber); font-weight: 600;">🌟 Score: ${item.importance_score || 8}/10</span>
+                        <a href="${escapeHtml(item.link)}" target="_blank" style="font-size: 11.5px; color: var(--primary); text-decoration: none; font-weight: 600;">
+                            🔗 View Source Article ↗
+                        </a>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+    } catch (err) {
+        container.innerHTML = `<div style="text-align: center; color: var(--rose);">Error loading raw scraped feed log.</div>`;
+    }
+}
+
+function closeRawFeedModal() {
+    document.getElementById('rawFeedModal').classList.remove('active');
 }
 
 // Open Sources Scraping Report Modal

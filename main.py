@@ -6,7 +6,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from db.database import init_db, get_articles, toggle_bookmark, get_stats, save_article, get_source_stats
+from db.database import (
+    init_db, get_articles, toggle_bookmark, mark_as_read, 
+    get_stats, save_article, get_source_stats, get_raw_scraped_feed
+)
 from scraper.news_scraper import run_all_scrapers
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
 from engine.feynman import generate_feynman_breakdown
@@ -37,9 +40,9 @@ async def lifespan(app: FastAPI):
     print("[Server] Shutdown complete.")
 
 app = FastAPI(
-    title="Feynman Finance India — Top 5 Wealth Detective Engine",
-    description="Automated Indian Financial News Aggregator focusing on Top 5 High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint",
-    version="2.2.0",
+    title="Feynman Finance India — Top 10 Wealth Detective Engine",
+    description="Automated Indian Financial News Aggregator focusing on Top 10 High-Impact Unread Stories with Feynman First Principles & Financial Detective Wealth Blueprint",
+    version="2.3.0",
     lifespan=lifespan
 )
 
@@ -64,8 +67,9 @@ def fetch_news(
     category: str = Query("all", description="Category filter"),
     query: str = Query(None, description="Search keyword"),
     page: int = Query(1, ge=1),
-    limit: int = Query(5, ge=1, le=100),
-    bookmarked_only: bool = Query(False)
+    limit: int = Query(10, ge=1, le=100),  # Defaults to Top 10 High-Impact Stories!
+    bookmarked_only: bool = Query(False),
+    include_read: bool = Query(False)
 ):
     offset = (page - 1) * limit
     articles = get_articles(
@@ -73,7 +77,8 @@ def fetch_news(
         query=query,
         limit=limit,
         offset=offset,
-        bookmarked_only=bookmarked_only
+        bookmarked_only=bookmarked_only,
+        include_read=include_read
     )
     return {"status": "success", "page": page, "count": len(articles), "articles": articles}
 
@@ -146,6 +151,12 @@ def bookmark_article(article_id: int):
     new_state = toggle_bookmark(article_id)
     return {"status": "success", "article_id": article_id, "is_bookmarked": new_state}
 
+@app.post("/api/read/{article_id}")
+def mark_article_read(article_id: int):
+    """Mark article as read so next fresh unread story slides up into Top 10."""
+    new_state = mark_as_read(article_id)
+    return {"status": "success", "article_id": article_id, "is_read": new_state}
+
 @app.get("/api/jargon")
 def search_jargon(query: str = None):
     terms = list(FINANCIAL_JARGON_DB.values())
@@ -158,6 +169,12 @@ def search_jargon(query: str = None):
 def fetch_sources_report():
     stats = get_source_stats()
     return {"status": "success", "sources": stats}
+
+@app.get("/api/raw-feed")
+def fetch_raw_scraped_feed(limit: int = Query(50, ge=1, le=200)):
+    """Transparent raw log of all scraped articles across all sources."""
+    feed = get_raw_scraped_feed(limit=limit)
+    return {"status": "success", "count": len(feed), "raw_feed": feed}
 
 @app.get("/api/stats")
 def fetch_stats():

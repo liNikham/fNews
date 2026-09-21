@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feynman Finance India — Top 5 Wealth Detective Engine</title>
-    <meta name="description" content="Automated Indian financial news engine focusing strictly on the Top 5 High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint.">
+    <title>Feynman Finance India — Top 10 Wealth Detective Engine</title>
+    <meta name="description" content="Automated Indian financial news engine focusing strictly on Top 10 Unread High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint.">
     <link rel="stylesheet" href="/static/styles.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 </head>
@@ -18,11 +18,14 @@
                 <div class="brand-logo">🧠</div>
                 <div>
                     <h1 class="brand-title">Feynman Finance</h1>
-                    <div class="brand-tagline">Top 5 Financial Detective Stories</div>
+                    <div class="brand-tagline">Top 10 Financial Detective Stories</div>
                 </div>
             </a>
             
             <div class="header-controls">
+                <button class="btn btn-glass" onclick="openRawFeedModal()" title="View transparent raw log of all scraped articles">
+                    <span>📡 Scraped Log</span>
+                </button>
                 <button class="btn btn-glass" onclick="triggerManualScrape()" id="scrapeBtn" title="Scrape Fresh News">
                     <span id="scrapeIcon">🔄</span> <span>Sync News</span>
                 </button>
@@ -37,8 +40,8 @@
             <div class="stat-widget" style="border-left: 4px solid #3b82f6;">
                 <div class="stat-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔥</div>
                 <div>
-                    <div class="stat-value" id="statTotalArticles">Top 5</div>
-                    <div class="stat-desc">Most Critical Stories</div>
+                    <div class="stat-value" id="statTotalArticles">Top 10</div>
+                    <div class="stat-desc">Unread Critical Stories</div>
                 </div>
             </div>
             
@@ -59,11 +62,11 @@
                 </div>
             </div>
 
-            <div class="stat-widget" style="border-left: 4px solid #f59e0b;">
-                <div class="stat-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">⚡</div>
+            <div class="stat-widget" style="border-left: 4px solid #f59e0b;" onclick="openRawFeedModal()" title="Click to view raw scraped feed history">
+                <div class="stat-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">📡</div>
                 <div>
-                    <div class="stat-value">Every 15m</div>
-                    <div class="stat-desc">Auto 15-Min Live Refresh</div>
+                    <div class="stat-value">Scraped Log</div>
+                    <div class="stat-desc">View All Scraped News ↗</div>
                 </div>
             </div>
         </section>
@@ -76,11 +79,12 @@
             </div>
 
             <div class="categories-scroll" id="categoryTabs">
-                <button class="cat-pill active" onclick="switchCategory('all', this)">🔥 Top 5 Critical Stories</button>
+                <button class="cat-pill active" onclick="switchCategory('all', this)">🔥 Top 10 Critical Stories</button>
                 <button class="cat-pill" onclick="switchCategory('Stocks & Equity', this)">📈 Stocks & Equity</button>
                 <button class="cat-pill" onclick="switchCategory('Banking & RBI', this)">🏦 Banking & RBI</button>
                 <button class="cat-pill" onclick="switchCategory('Economy & Policy', this)">📊 Economy & Policy</button>
                 <button class="cat-pill" onclick="switchCategory('Savings & Personal Finance', this)">💰 Savings & Mutual Funds</button>
+                <button class="cat-pill" onclick="openRawFeedModal()">📡 Raw Scraped Feed</button>
                 <button class="cat-pill" onclick="switchCategory('bookmarked', this)">🔖 Bookmarks</button>
                 <button class="cat-pill" onclick="switchCategory('jargon', this)">📖 Jargon Buster</button>
             </div>
@@ -92,10 +96,10 @@
             <div id="sectionHeaderBanner" style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%); border-left: 4px solid var(--amber); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 style="font-size: 16px; color: var(--amber); display: flex; align-items: center; gap: 8px;">
-                        🔥 TOP 5 HIGH-IMPACT STORIES FOR YOUR WEALTH
+                        🔥 TOP 10 UNREAD HIGH-IMPACT STORIES FOR YOUR WEALTH
                     </h3>
                     <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
-                        Automatically refreshed every 15 minutes by Financial Detective AI across 10 top Indian news sources.
+                        Mark a story as read to immediately pull the next fresh news item into your Top 10!
                     </p>
                 </div>
                 <button class="btn btn-glass" style="font-size: 12px; padding: 6px 14px;" id="toggleLimitBtn" onclick="toggleLimitView()">
@@ -104,12 +108,28 @@
             </div>
 
             <div id="articlesGrid" class="news-cards-grid">
-                <!-- Top 5 Cards dynamically injected here -->
+                <!-- Top 10 Cards dynamically injected here -->
             </div>
             
             <div id="loadingSpinner" class="spinner" style="display: none;"></div>
         </main>
 
+    </div>
+
+    <!-- RAW SCRAPED FEED MODAL -->
+    <div class="modal-backdrop" id="rawFeedModal">
+        <div class="modal-container" style="max-width: 820px;">
+            <button class="modal-close-btn" onclick="closeRawFeedModal()">✕</button>
+            
+            <h2 style="margin-bottom: 6px; font-size: 22px;">📡 Live Raw Scraped News Log</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Transparent timeline of all raw articles scraped from Google News, Economic Times, LiveMint, Moneycontrol, Business Standard, Financial Express.
+            </p>
+
+            <div id="rawFeedList" style="display: grid; gap: 12px; max-height: 65vh; overflow-y: auto;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
     </div>
 
     <!-- SOURCE SCRAPING BREAKDOWN REPORT MODAL -->
@@ -231,16 +251,17 @@
     <nav class="mobile-bottom-nav">
         <button class="nav-item-btn active" onclick="switchCategory('all'); setMobileNavActive(this)">
             <span class="nav-item-icon">🔥</span>
-            <span>Top 5</span>
+            <span>Top 10</span>
         </button>
         <button class="nav-item-btn" onclick="switchCategory('Stocks & Equity'); setMobileNavActive(this)">
             <span class="nav-item-icon">📈</span>
             <span>Stocks</span>
         </button>
-        <button class="nav-item-btn" onclick="openSourcesReportModal()">
-            <span class="nav-item-icon">📊</span>
-            <span>Sources</span>
+        <button class="nav-item-btn" onclick="openRawFeedModal()">
+            <span class="nav-item-icon">📡</span>
+            <span>Scraped Log</span>
         </button>
+
         <button class="nav-item-btn" onclick="switchCategory('bookmarked'); setMobileNavActive(this)">
             <span class="nav-item-icon">🔖</span>
             <span>Saved</span>

@@ -31,6 +31,7 @@ def init_db():
             actionable_blueprint TEXT,
             importance_score INTEGER DEFAULT 7,
             is_bookmarked INTEGER DEFAULT 0,
+            is_read INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -57,10 +58,13 @@ def init_db():
         cursor.execute("ALTER TABLE articles ADD COLUMN actionable_blueprint TEXT")
     if "importance_score" not in columns:
         cursor.execute("ALTER TABLE articles ADD COLUMN importance_score INTEGER DEFAULT 7")
+    if "is_read" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN is_read INTEGER DEFAULT 0")
 
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_category ON articles(category)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_created_at ON articles(created_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_importance ON articles(importance_score)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_read ON articles(is_read)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_hash ON articles(link_hash)')
     
     conn.commit()
@@ -139,8 +143,8 @@ def save_article(article_data: dict) -> int:
                 raw_summary, content, feynman_eli5, feynman_jargon,
                 feynman_past_context, feynman_future_impact,
                 feynman_connected_news, feynman_money_psychology,
-                detective_loopholes, actionable_blueprint, importance_score
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                detective_loopholes, actionable_blueprint, importance_score, is_read
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ''', (
             ensure_string(article_data.get('title', '')),
             ensure_string(article_data.get('link', '')),
@@ -172,14 +176,21 @@ def save_article(article_data: dict) -> int:
         
     return article_id
 
-def get_articles(category=None, query=None, limit=5, offset=0, bookmarked_only=False):
-    """Retrieve top articles ordered by highest importance_score and recency."""
+def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=False, include_read=False):
+    """
+    Retrieve top articles ordered by highest importance_score and recency.
+    By default, hides marked-as-read articles so new news slides up into the Top 10!
+    """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
     sql = "SELECT * FROM articles WHERE 1=1"
     params = []
+    
+    # Filter out read articles by default unless specifically requested or viewing bookmarks
+    if not include_read and not bookmarked_only:
+        sql += " AND is_read = 0"
     
     if category and category.lower() != 'all':
         sql += " AND category = ?"
@@ -222,6 +233,34 @@ def toggle_bookmark(article_id: int):
     conn.close()
     return row[0] if row else 0
 
+def mark_as_read(article_id: int):
+    """Mark an article as read so next fresh news slides up."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('UPDATE articles SET is_read = 1 WHERE id = ?', (article_id,))
+    conn.commit()
+    cursor.execute('SELECT is_read FROM articles WHERE id = ?', (article_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else 0
+
+def get_raw_scraped_feed(limit=50):
+    """Retrieve raw log of all scraped articles across sources for transparent tracking."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT id, title, link, source_name, category, pub_date, raw_summary, importance_score, is_read, created_at
+        FROM articles
+        ORDER BY id DESC
+        LIMIT ?
+    ''', (limit,))
+    
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
 def get_stats():
     """Get aggregate statistics for dashboard."""
     conn = sqlite3.connect(DB_PATH)
@@ -229,6 +268,9 @@ def get_stats():
     
     cursor.execute('SELECT COUNT(*) FROM articles')
     total_articles = cursor.fetchone()[0]
+    
+    cursor.execute('SELECT COUNT(*) FROM articles WHERE is_read = 0')
+    unread_articles = cursor.fetchone()[0]
     
     cursor.execute('SELECT category, COUNT(*) FROM articles GROUP BY category')
     category_counts = dict(cursor.fetchall())
@@ -242,6 +284,7 @@ def get_stats():
     
     return {
         "total_articles": total_articles,
+        "unread_articles": unread_articles,
         "category_counts": category_counts,
         "total_bookmarks": total_bookmarks,
         "source_stats": source_stats
