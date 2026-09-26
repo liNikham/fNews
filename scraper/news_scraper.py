@@ -62,9 +62,7 @@ async def scrape_single_source(source: dict) -> dict:
                 if extracted_body:
                     content = extracted_body
                     
-            # Fast initial synthesis for bulk background scraping (Zero Gemini API quota consumption during bulk RSS sync)
-            feynman_data = await asyncio.to_thread(_generate_local_feynman, title, content, category)
-            importance_score = feynman_data.get("importance_score", 7)
+            importance_score = 7
             
             # Filter low-importance noise
             if importance_score < MIN_IMPORTANCE_SCORE:
@@ -79,16 +77,16 @@ async def scrape_single_source(source: dict) -> dict:
                 "pub_date": pub_date,
                 "raw_summary": summary[:400],
                 "content": content[:2500],
-                "news_summary": ensure_string(feynman_data.get("news_summary", summary[:400])),
-                "feynman_eli5": ensure_string(feynman_data.get("feynman_eli5", "")),
-                "feynman_jargon": feynman_data.get("feynman_jargon", []),
-                "feynman_past_context": ensure_string(feynman_data.get("feynman_past_context", "")),
-                "feynman_future_impact": ensure_string(feynman_data.get("feynman_future_impact", "")),
-                "feynman_connected_news": ensure_string(feynman_data.get("feynman_connected_news", "")),
-                "feynman_money_psychology": ensure_string(feynman_data.get("feynman_money_psychology", "")),
-                "detective_loopholes": ensure_string(feynman_data.get("detective_loopholes", "")),
-                "actionable_blueprint": ensure_string(feynman_data.get("actionable_blueprint", "")),
-                "importance_score": importance_score
+                "news_summary": summary[:400],
+                "feynman_eli5": "",
+                "feynman_jargon": [],
+                "feynman_past_context": "",
+                "feynman_future_impact": "",
+                "feynman_connected_news": "",
+                "feynman_money_psychology": "",
+                "detective_loopholes": "",
+                "actionable_blueprint": "",
+                "importance_score": 7
             }
             
             res_id = await asyncio.to_thread(save_article, article_record)

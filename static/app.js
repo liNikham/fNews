@@ -140,8 +140,8 @@ function renderArticlesGrid(articles) {
                 </div>
 
                 <div style="margin-bottom: 16px;">
-                    <button class="btn btn-gradient" style="width: 100%; padding: 10px 16px; font-size: 13px; font-weight: 700;" onclick="openFeynmanModal(${article.id}, true)">
-                        ✨ Explain / System Breakdown ➔
+                    <button class="btn btn-gradient" style="width: 100%; padding: 10px 16px; font-size: 13px; font-weight: 700;" onclick="openFeynmanModal(${article.id})">
+                        ✨ View & Explain News ➔
                     </button>
                 </div>
             </div>
@@ -363,7 +363,7 @@ function closeSourcesReportModal() {
 let currentActiveArticleId = null;
 
 // Open Article Detail Modal
-function openFeynmanModal(articleId, autoExplain = false) {
+function openFeynmanModal(articleId) {
     currentActiveArticleId = articleId;
     const article = currentArticles.find(a => a.id === articleId);
     if (!article) return;
@@ -374,11 +374,11 @@ function openFeynmanModal(articleId, autoExplain = false) {
     document.getElementById('modalTitle').innerText = article.title;
     const newsSumElem = document.getElementById('modalNewsSummary');
     if (newsSumElem) {
-        newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No summary available';
+        newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No news summary available.';
     }
-    document.getElementById('modalEli5').innerText = article.system_mechanics || article.feynman_eli5 || 'Click "✨ Gemini AI Breakdown" below to generate First-Principles analysis.';
-    document.getElementById('modalDetective').innerText = article.detective_loopholes || 'Click "✨ Gemini AI Breakdown" below for Fine Print catches.';
-    document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'Click "✨ Gemini AI Breakdown" below for Action Plan.';
+    document.getElementById('modalEli5').innerText = article.system_mechanics || article.feynman_eli5 || '📌 Click "✨ Explain with Gemini AI" below to generate First-Principles System Architecture breakdown.';
+    document.getElementById('modalDetective').innerText = article.detective_loopholes || '📌 Click "✨ Explain with Gemini AI" below for Institutional Fine Print catches.';
+    document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || '📌 Click "✨ Explain with Gemini AI" below for Rational Action Plan.';
 
     // Jargon list
     const jargonContainer = document.getElementById('modalJargonList');
@@ -386,7 +386,7 @@ function openFeynmanModal(articleId, autoExplain = false) {
     const jList = article.feynman_jargon || [];
     
     if (jList.length === 0) {
-        jargonContainer.innerHTML = `<div style="font-size: 13px; color: var(--text-muted);">No complex jargon found in this story!</div>`;
+        jargonContainer.innerHTML = `<div style="font-size: 13px; color: var(--text-muted);">No jargon decoded yet. Click "✨ Explain with Gemini AI" to decode key terms.</div>`;
     } else {
         jList.forEach(j => {
             const item = document.createElement('div');
@@ -405,8 +405,8 @@ function openFeynmanModal(articleId, autoExplain = false) {
         });
     }
 
-    document.getElementById('modalPast').innerText = article.real_world_connections || article.feynman_future_impact || article.feynman_past_context || 'N/A';
-    document.getElementById('modalPsychology').innerText = article.signal_vs_noise || article.feynman_money_psychology || 'N/A';
+    document.getElementById('modalPast').innerText = article.real_world_connections || article.feynman_future_impact || article.feynman_past_context || '📌 Click "✨ Explain with Gemini AI" below for Real-World Connections.';
+    document.getElementById('modalPsychology').innerText = article.signal_vs_noise || article.feynman_money_psychology || '📌 Click "✨ Explain with Gemini AI" below for Signal vs Noise evaluation.';
     
     const linkBtn = document.getElementById('modalOriginalLink');
     if (article.link) {
@@ -418,17 +418,14 @@ function openFeynmanModal(articleId, autoExplain = false) {
 
     const simplifyBtn = document.getElementById('modalSimplifyBtn');
     if (simplifyBtn) {
-        simplifyBtn.innerText = "✨ Gemini AI Breakdown";
+        const hasExplanation = !!(article.detective_loopholes || article.system_mechanics);
+        simplifyBtn.innerText = hasExplanation ? "🔄 Re-Explain with Gemini AI" : "✨ Explain with Gemini AI";
         simplifyBtn.disabled = false;
     }
 
     currentModalText = `${article.title}. ${article.news_summary || article.raw_summary}`;
 
     document.getElementById('feynmanModal').classList.add('active');
-
-    if (autoExplain && (!article.detective_loopholes || article.detective_loopholes.includes("Institutional Arbitrage"))) {
-        triggerModalOnDemandSimplify();
-    }
 }
 
 async function triggerModalOnDemandSimplify() {
