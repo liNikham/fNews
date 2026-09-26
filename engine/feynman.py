@@ -52,15 +52,8 @@ Analyze this news thoroughly and return STRICT JSON with these exact 9 keys:
 8. "real_world_connections": 🌐 Real-World Connections: 3 bullet points detailing direct impact on (1) Software Engineer's personal life/job/loans, (2) Society & retail vs institutional behavior, (3) Global & Indian macro economy.
 9. "feynman_past_context": 2 sentences explaining the historical root cause or macro setup behind this event.
 """
-    clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
-    
-    # Active 2026 production models: gemini-3.1-flash-lite first, then gemini-2.5-flash-lite, gemini-2.5-flash
-    candidate_models = [
-        clean_model,
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash-lite",
-        "gemini-2.5-flash"
-    ]
+    model = "gemini-3.1-flash-lite"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
     
     payload = {
         "contents": [{"parts": [{"text": system_prompt}]}],
@@ -70,43 +63,33 @@ Analyze this news thoroughly and return STRICT JSON with these exact 9 keys:
         }
     }
     
-    last_err = None
-    for model in candidate_models:
-        if not model:
-            continue
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
-        try:
-            res = httpx.post(url, json=payload, timeout=25.0)
-            if res.status_code == 200:
-                data = res.json()
-                text_content = data['candidates'][0]['content']['parts'][0]['text']
-                parsed = json.loads(text_content)
-                parsed['importance_score'] = int(parsed.get('importance_score', 8))
-                if not parsed.get('news_summary'):
-                    parsed['news_summary'] = raw_text[:350]
-                # Ensure backwards-compatibility mapping for existing DB schema
-                if 'system_mechanics' in parsed and not parsed.get('feynman_eli5'):
-                    parsed['feynman_eli5'] = parsed['system_mechanics']
-                elif 'feynman_eli5' in parsed and not parsed.get('system_mechanics'):
-                    parsed['system_mechanics'] = parsed['feynman_eli5']
-                    
-                if 'signal_vs_noise' in parsed and not parsed.get('feynman_money_psychology'):
-                    parsed['feynman_money_psychology'] = parsed['signal_vs_noise']
-                elif 'feynman_money_psychology' in parsed and not parsed.get('signal_vs_noise'):
-                    parsed['signal_vs_noise'] = parsed['feynman_money_psychology']
-                    
-                if 'real_world_connections' in parsed and not parsed.get('feynman_future_impact'):
-                    parsed['feynman_future_impact'] = parsed['real_world_connections']
-                elif 'feynman_future_impact' in parsed and not parsed.get('real_world_connections'):
-                    parsed['real_world_connections'] = parsed['feynman_future_impact']
-                    
-                return parsed
-            else:
-                last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
-        except Exception as e:
-            last_err = str(e)
+    res = httpx.post(url, json=payload, timeout=25.0)
+    if res.status_code == 200:
+        data = res.json()
+        text_content = data['candidates'][0]['content']['parts'][0]['text']
+        parsed = json.loads(text_content)
+        parsed['importance_score'] = int(parsed.get('importance_score', 8))
+        if not parsed.get('news_summary'):
+            parsed['news_summary'] = raw_text[:350]
+        # Ensure backwards-compatibility mapping for existing DB schema
+        if 'system_mechanics' in parsed and not parsed.get('feynman_eli5'):
+            parsed['feynman_eli5'] = parsed['system_mechanics']
+        elif 'feynman_eli5' in parsed and not parsed.get('system_mechanics'):
+            parsed['system_mechanics'] = parsed['feynman_eli5']
             
-    raise Exception(f"Gemini API endpoint error: {last_err}")
+        if 'signal_vs_noise' in parsed and not parsed.get('feynman_money_psychology'):
+            parsed['feynman_money_psychology'] = parsed['signal_vs_noise']
+        elif 'feynman_money_psychology' in parsed and not parsed.get('signal_vs_noise'):
+            parsed['signal_vs_noise'] = parsed['feynman_money_psychology']
+            
+        if 'real_world_connections' in parsed and not parsed.get('feynman_future_impact'):
+            parsed['feynman_future_impact'] = parsed['real_world_connections']
+        elif 'feynman_future_impact' in parsed and not parsed.get('real_world_connections'):
+            parsed['real_world_connections'] = parsed['feynman_future_impact']
+            
+        return parsed
+    else:
+        raise Exception(f"Gemini API error (Status {res.status_code} for {model}): {res.text[:120]}")
 
 def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
     """

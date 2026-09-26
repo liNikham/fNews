@@ -16,7 +16,7 @@ if os.path.exists(env_file):
 
 # Gemini API Settings - Configured strictly for gemini-3.1-flash-lite
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+GEMINI_MODEL = "gemini-3.1-flash-lite"
 
 # Scraping settings - Configured for 15-Minute Auto-Refresh!
 SCRAPE_INTERVAL_MINUTES = 15
