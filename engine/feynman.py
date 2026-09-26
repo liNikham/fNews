@@ -22,27 +22,35 @@ def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finan
 def _generate_with_gemini(title: str, raw_text: str, category: str) -> dict:
     """
     Uses Gemini API with model gemini-3.1-flash-lite.
+    Tailored for a Software Engineer (1 year experience): system-architecture mental models, adult analytical tone, and signal vs. noise evaluation.
     """
     system_prompt = f"""
-You are an elite Financial Detective and Wealth Strategist combining Richard Feynman's First Principles teaching method with Warren Buffett & Ray Dalio's practical wealth-building mindset.
-Your audience is a smart Software Engineer in India who has no formal finance background but wants to understand news in DEEP detail, spot HIDDEN LOOPHOLES/FINE PRINT, and take concrete action to BUILD WEALTH and manage money.
+You are an elite Financial System Architect and Behavioral Macro Strategist combining Richard Feynman's First Principles analytical clarity with Ray Dalio & Warren Buffett's wealth-building mental models.
+Your audience is a smart Software Engineer in India (1 year of tech experience) who is highly logical and analytical, but lacks a formal finance background.
+
+CRITICAL TONE & PERSPECTIVE RULES:
+- DO NOT use childish analogies (e.g. NO "tea stalls", "piggy banks", "candy shops", "for 5-year-olds"). Treat the user as an intelligent adult software engineer.
+- Use system-architecture mental models: explain financial mechanisms as inputs, pipelines, liquidity flows, incentive structures, and risk-reward dynamics.
+- FINANCIAL MARKETS ARE EMOTIONAL & GAMBLING-LIKE SYSTEMS: Explain how market emotions (fear, FOMO, greed, panic) drive headlines, how different market participants with different risk appetites (retail vs institutions vs traders) react, and evaluate whether this news is genuine FUNDAMENTAL SIGNAL or EMOTIONAL NOISE/HYPE.
+- CONNECT IDEAS TO REAL LIFE & SOCIETY: Explicitly explain how this affects:
+  1. The user personally as a Software Engineer in India (tech hiring/salaries, home loan EMIs, taxes, wealth accumulation).
+  2. Other people & society (retail investors, middle class, institutional players with different risk profiles).
+  3. The broader global & Indian macro economy.
 
 ARTICLE TITLE: {title}
 CATEGORY: {category}
 ARTICLE TEXT: {raw_text[:2500]}
 
-Analyze this news like a financial detective investigating a case.
-
-Return STRICT JSON with these exact 9 keys:
-1. "news_summary": 📰 Clear 3-sentence factual summary of the core news event (Who, What, Key Numbers, Dates, and Official Decisions). Focus strictly on actual news facts without jargon.
-2. "importance_score": (Integer 1 to 10). Rate how significantly this news affects a person's wallet, savings, investments, loan EMIs, or taxes in India. (Assign < 6 for filler/clickbait news, 7-10 for high-impact news).
-3. "feynman_eli5": Deep 3-sentence First Principles explanation using vivid real-world analogies (e.g. tea stalls, local shops, piggy banks). Explain the core physics of how the money moves.
-4. "detective_loopholes": 🕵️‍♂️ Detective Breakdown & Hidden Loopholes: 3-4 bullet points uncovering fine print, institutional tricks, tax implications, hidden catches, or arbitrage opportunities that 99% of retail readers miss.
-5. "actionable_blueprint": 🎯 Actionable Wealth Blueprint ("What Should I Do With This Info to Become Rich?"): 3-4 concrete, practical steps the user can execute today (e.g., "Pre-pay home loan before month end", "Switch FD duration to 399 days", "Accumulate Banking ETFs during dip", "Optimize tax under Section 80C/10(14)").
-6. "feynman_jargon": Array of [{{"term": "Term Name", "eli5": "Simple definition", "analogy": "Analogy"}}] for 2-4 financial terms in the article.
-7. "feynman_past_context": 2-3 sentences uncovering the hidden root cause and historical backdrop behind this news.
-8. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
-9. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
+Analyze this news thoroughly and return STRICT JSON with these exact 9 keys:
+1. "news_summary": 📰 Factual 2-3 sentence core summary of what actually happened (Who, What, Key Numbers, Dates, Official Decisions).
+2. "importance_score": (Integer 1 to 10). Rate how significantly this news impacts personal finances, wealth, or markets in India (7-10 for high impact, < 6 for filler/routine news).
+3. "system_mechanics": ⚙️ First-Principles System Architecture: 3-4 sentences explaining the underlying financial physics and mechanics of how money/credit flows through the system. Avoid childish analogies; use clean technical/analytical logic.
+4. "signal_vs_noise": 🎲 Signal vs. Emotional Noise (Should You Believe It?): 2-3 sentences evaluating if this news is genuine fundamental signal or emotional hype/media noise. Explain how market emotion (fear/greed/speculative gambling) and different risk appetites drive reactions.
+5. "detective_loopholes": 🕵️‍♂️ Institutional Fine Print & Hidden Catches: 3 bullet points uncovering fine print, tax implications, institutional tricks, or arbitrage opportunities that retail investors miss.
+6. "actionable_blueprint": 🎯 Rational Action Plan: 3 concrete, disciplined steps the user should execute (e.g. loan prepayments, asset allocation, tax optimization, avoiding emotional hype).
+7. "feynman_jargon": Array of [{{"term": "Term Name", "eli5": "Clear technical definition for an engineer", "analogy": "Clean real-world system comparison"}}] for 2-4 key financial terms.
+8. "real_world_connections": 🌐 Real-World Connections: 3 bullet points detailing direct impact on (1) Software Engineer's personal life/job/loans, (2) Society & retail vs institutional behavior, (3) Global & Indian macro economy.
+9. "feynman_past_context": 2 sentences explaining the historical root cause or macro setup behind this event.
 """
     clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
     
@@ -76,6 +84,22 @@ Return STRICT JSON with these exact 9 keys:
                 parsed['importance_score'] = int(parsed.get('importance_score', 8))
                 if not parsed.get('news_summary'):
                     parsed['news_summary'] = raw_text[:350]
+                # Ensure backwards-compatibility mapping for existing DB schema
+                if 'system_mechanics' in parsed and not parsed.get('feynman_eli5'):
+                    parsed['feynman_eli5'] = parsed['system_mechanics']
+                elif 'feynman_eli5' in parsed and not parsed.get('system_mechanics'):
+                    parsed['system_mechanics'] = parsed['feynman_eli5']
+                    
+                if 'signal_vs_noise' in parsed and not parsed.get('feynman_money_psychology'):
+                    parsed['feynman_money_psychology'] = parsed['signal_vs_noise']
+                elif 'feynman_money_psychology' in parsed and not parsed.get('signal_vs_noise'):
+                    parsed['signal_vs_noise'] = parsed['feynman_money_psychology']
+                    
+                if 'real_world_connections' in parsed and not parsed.get('feynman_future_impact'):
+                    parsed['feynman_future_impact'] = parsed['real_world_connections']
+                elif 'feynman_future_impact' in parsed and not parsed.get('real_world_connections'):
+                    parsed['real_world_connections'] = parsed['feynman_future_impact']
+                    
                 return parsed
             else:
                 last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
@@ -86,7 +110,7 @@ Return STRICT JSON with these exact 9 keys:
 
 def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
     """
-    Local Detective Feynman Synthesizer (Fallback when API key is unavailable or offline).
+    Local System Architect Synthesizer (Fallback when API key is unavailable or offline).
     """
     full_text = f"{title}. {raw_text}"
     jargon_matched = find_jargon_in_text(full_text)
@@ -108,36 +132,50 @@ def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
     ]
 
     news_summary = f"Summary: {title}. {raw_text[:300]}..." if len(raw_text) > 300 else f"Summary: {title}. {raw_text}"
-    eli5_summary = f"Imagine a big village marketplace where water flow is controlled by a central tap. In this news: '{title[:70]}...', major institutional players adjusted how cash flows through Indian businesses and consumer pockets."
+    
+    system_mechanics = (
+        f"Underlying System Flow: In '{title[:70]}...', financial capital moves through a multi-tier liquidity pipeline. "
+        f"Central policy levers alter money supply costs, which propagate through institutional balance sheets, corporate borrowing rates, and consumer credit availability."
+    )
+    
+    signal_vs_noise = (
+        "🎲 **Signal vs. Emotional Noise**: Market headlines amplify short-term noise. High-frequency traders and emotional retail investors gamble on immediate price swings, "
+        "while institutional capital focuses on fundamental cash flow yields. Treat sudden market moves as sentiment fluctuations rather than immediate structural collapse."
+    )
     
     detective_loopholes = (
-        "• **Hidden Institutional Angle**: Big foreign and domestic funds often use news events to rebalance portfolios before retail investors react.\n"
-        "• **Fine Print Catch**: Interest rate or regulatory changes usually take 1-2 billing cycles to reflect in your actual bank statements.\n"
-        "• **Tax & Liquidity Arbitrage**: Check whether gains/yields from this move qualify for short-term vs long-term capital gains tax."
+        "• **Institutional Arbitrage**: Large domestic & foreign funds adjust sector allocations prior to retail headline digestion.\n"
+        "• **System Transmission Lag**: Policy & interest rate shifts take 1-2 billing cycles to reflect in commercial banking loan statements.\n"
+        "• **Tax & Capital Efficiency**: Assess tax implications (short-term vs long-term capital gains) before executing asset reallocation."
     )
     
     actionable_blueprint = (
-        "• **1. Audit Your Money Flow**: Review fixed deposit returns vs inflation rate to prevent purchasing power erosion.\n"
-        "• **2. Tactical Debt Action**: If loan interest rates are rising, make lump-sum principal prepayments; if falling, hold cash in liquid funds.\n"
-        "• **3. Strategic Equity Accumulation**: Focus on high-cash-flow companies and low-expense index funds via monthly SIPs rather than chasing news hype."
+        "• **1. System Audit**: Evaluate net real yield (nominal interest minus CPI inflation) across savings and fixed-income assets.\n"
+        "• **2. Debt Optimization**: If interest rates trend upward, make targeted principal prepayments on floating-rate loans.\n"
+        "• **3. Disciplined Asset Allocation**: Automate monthly SIPs in broad-market index funds (e.g. Nifty 50) to remove emotional timing biases."
     )
     
     importance_score = 8
     
-    past_context = f"Over past quarters, Indian financial regulators and market participants have navigated global interest rate cycles and domestic inflation. This event stems from structural shifts in consumer liquidity and corporate earnings."
-    future_impact = "• **Your Wallet**: Direct impact on net savings yield and loan borrowing costs over the next quarter.\n• **Stock Portfolio**: Sector-specific valuation shifts for equity holdings.\n• **Macro Economy**: Strengthens domestic capital formation and market resilience."
-    connected_news = "Connected to RBI monetary policy stance, retail SIP inflows, and broader Indian macroeconomic indicators."
-    money_psychology = "💡 **Detective Wealth Wisdom**: News creates noise; fundamentals build wealth. Never buy or sell investments out of emotional panic. Use market headlines as data points to execute your disciplined long-term asset allocation plan."
+    past_context = "Historical Macro Setup: Shift in global central bank interest rate cycles and domestic liquidity management over recent quarters."
+    real_world_connections = (
+        "• **Your Life (Tech Engineer)**: Direct impact on home loan EMIs, tax deductions under Indian tax slabs, and tech sector investment capital.\n"
+        "• **Society & Retail vs Institutional**: Risk-averse retail savers seek high FD rates while risk-seeking speculators leverage derivatives.\n"
+        "• **Global Macro**: Ripple effects across Indian capital markets, rupee exchange rate, and broader economic output."
+    )
 
     return {
         "news_summary": news_summary,
         "importance_score": importance_score,
-        "feynman_eli5": eli5_summary,
+        "system_mechanics": system_mechanics,
+        "feynman_eli5": system_mechanics,
+        "signal_vs_noise": signal_vs_noise,
+        "feynman_money_psychology": signal_vs_noise,
         "detective_loopholes": detective_loopholes,
         "actionable_blueprint": actionable_blueprint,
         "feynman_jargon": jargon_list,
         "feynman_past_context": past_context,
-        "feynman_future_impact": future_impact,
-        "feynman_connected_news": connected_news,
-        "feynman_money_psychology": money_psychology
+        "real_world_connections": real_world_connections,
+        "feynman_future_impact": real_world_connections,
+        "feynman_connected_news": "Connected to RBI monetary policy stance, retail SIP inflows, and broader Indian macroeconomic indicators."
     }

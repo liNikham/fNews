@@ -139,24 +139,24 @@ function renderArticlesGrid(articles) {
                     <div class="box-body-text">${escapeHtml(article.news_summary || article.raw_summary || article.content)}</div>
                 </div>
 
-                <!-- 2. ELI5 -->
+                <!-- 2. SYSTEM MECHANICS -->
                 <div class="feynman-eli5-card-box">
-                    <div class="box-label-header" style="color: var(--emerald);">👶 Feynman ELI5</div>
-                    <div class="box-body-text">${escapeHtml(article.feynman_eli5)}</div>
+                    <div class="box-label-header" style="color: var(--emerald);">⚙️ System Mechanics</div>
+                    <div class="box-body-text">${escapeHtml(article.system_mechanics || article.feynman_eli5)}</div>
                 </div>
 
-                <!-- 2. DETECTIVE LOOPHOLES -->
+                <!-- 3. INSTITUTIONAL FINE PRINT -->
                 ${article.detective_loopholes ? `
                 <div class="detective-card-box">
-                    <div class="box-label-header" style="color: var(--amber);">🕵️‍♂️ Detective Catch / Fine Print</div>
+                    <div class="box-label-header" style="color: var(--amber);">🕵️‍♂️ Institutional Fine Print & Catches</div>
                     <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.detective_loopholes)}</div>
                 </div>
                 ` : ''}
 
-                <!-- 3. ACTIONABLE BLUEPRINT -->
+                <!-- 4. RATIONAL ACTION PLAN -->
                 ${article.actionable_blueprint ? `
                 <div class="action-blueprint-card-box">
-                    <div class="box-label-header" style="color: var(--primary);">🎯 Wealth Blueprint (Action to Take)</div>
+                    <div class="box-label-header" style="color: var(--primary);">🎯 Rational Action Plan</div>
                     <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.actionable_blueprint)}</div>
                 </div>
                 ` : ''}
@@ -396,7 +396,7 @@ function openFeynmanModal(articleId) {
     if (newsSumElem) {
         newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No summary available';
     }
-    document.getElementById('modalEli5').innerText = article.feynman_eli5 || 'No summary available';
+    document.getElementById('modalEli5').innerText = article.system_mechanics || article.feynman_eli5 || 'No breakdown available';
     document.getElementById('modalDetective').innerText = article.detective_loopholes || 'No fine print caught.';
     document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'No specific action required.';
 
@@ -419,14 +419,14 @@ function openFeynmanModal(articleId) {
             item.innerHTML = `
                 <div style="font-weight: 700; color: #c084fc; font-size: 14px; margin-bottom: 4px;">🧩 ${escapeHtml(j.term)}</div>
                 <div style="font-size: 13.5px; color: #e2e8f0; line-height: 1.5;">${escapeHtml(j.eli5)}</div>
-                ${j.analogy ? `<div style="font-size: 12px; color: #cbd5e1; font-style: italic; margin-top: 6px; background: rgba(168, 85, 247, 0.12); padding: 6px 10px; border-radius: 6px;">💡 Analogy: ${escapeHtml(j.analogy)}</div>` : ''}
+                ${j.analogy ? `<div style="font-size: 12px; color: #cbd5e1; font-style: italic; margin-top: 6px; background: rgba(168, 85, 247, 0.12); padding: 6px 10px; border-radius: 6px;">⚙️ System Model: ${escapeHtml(j.analogy)}</div>` : ''}
             `;
             jargonContainer.appendChild(item);
         });
     }
 
-    document.getElementById('modalPast').innerText = article.feynman_past_context || 'N/A';
-    document.getElementById('modalPsychology').innerText = article.feynman_money_psychology || 'N/A';
+    document.getElementById('modalPast').innerText = article.real_world_connections || article.feynman_future_impact || article.feynman_past_context || 'N/A';
+    document.getElementById('modalPsychology').innerText = article.signal_vs_noise || article.feynman_money_psychology || 'N/A';
     
     const linkBtn = document.getElementById('modalOriginalLink');
     if (article.link) {
