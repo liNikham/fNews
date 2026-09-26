@@ -239,6 +239,65 @@ def toggle_bookmark(article_id: int):
     conn.close()
     return row[0] if row else 0
 
+def get_article_by_id(article_id: int):
+    """Retrieve single article by ID."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM articles WHERE id = ?', (article_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return None
+    item = dict(row)
+    try:
+        item['feynman_jargon'] = json.loads(item['feynman_jargon'])
+    except Exception:
+        item['feynman_jargon'] = []
+    return item
+
+def update_article_feynman_data(article_id: int, feynman_data: dict):
+    """Update article with on-demand AI breakdown."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    jargon_val = feynman_data.get('feynman_jargon', [])
+    if isinstance(jargon_val, list):
+        jargon_json = json.dumps(jargon_val)
+    else:
+        jargon_json = ensure_string(jargon_val)
+        
+    news_summary_val = feynman_data.get('news_summary', '')
+    
+    cursor.execute('''
+        UPDATE articles SET
+            feynman_eli5 = ?,
+            feynman_jargon = ?,
+            feynman_past_context = ?,
+            feynman_future_impact = ?,
+            feynman_connected_news = ?,
+            feynman_money_psychology = ?,
+            detective_loopholes = ?,
+            actionable_blueprint = ?,
+            news_summary = COALESCE(NULLIF(?, ''), news_summary),
+            importance_score = ?
+        WHERE id = ?
+    ''', (
+        ensure_string(feynman_data.get('feynman_eli5', '')),
+        jargon_json,
+        ensure_string(feynman_data.get('feynman_past_context', '')),
+        ensure_string(feynman_data.get('feynman_future_impact', '')),
+        ensure_string(feynman_data.get('feynman_connected_news', '')),
+        ensure_string(feynman_data.get('feynman_money_psychology', '')),
+        ensure_string(feynman_data.get('detective_loopholes', '')),
+        ensure_string(feynman_data.get('actionable_blueprint', '')),
+        ensure_string(news_summary_val),
+        int(feynman_data.get('importance_score', 8)),
+        article_id
+    ))
+    conn.commit()
+    conn.close()
+
 def mark_as_read(article_id: int):
     """Mark an article as read so next fresh news slides up."""
     conn = sqlite3.connect(DB_PATH)

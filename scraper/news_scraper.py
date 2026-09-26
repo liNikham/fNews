@@ -5,7 +5,7 @@ import html
 import re
 from config import NEWS_SOURCES, MAX_ARTICLES_PER_FEED, MIN_IMPORTANCE_SCORE
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
-from engine.feynman import generate_feynman_breakdown
+from engine.feynman import generate_feynman_breakdown, _generate_local_feynman
 from db.database import article_exists, save_article, record_source_stat, ensure_string
 
 def safe_str(val: str) -> str:
@@ -62,8 +62,8 @@ async def scrape_single_source(source: dict) -> dict:
                 if extracted_body:
                     content = extracted_body
                     
-            # Process via Financial Detective Feynman Engine offloaded to threadpool
-            feynman_data = await asyncio.to_thread(generate_feynman_breakdown, title, content, category)
+            # Fast initial synthesis for bulk background scraping (Zero Gemini API quota consumption during bulk RSS sync)
+            feynman_data = await asyncio.to_thread(_generate_local_feynman, title, content, category)
             importance_score = feynman_data.get("importance_score", 7)
             
             # Filter low-importance noise

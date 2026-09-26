@@ -383,8 +383,11 @@ function closeSourcesReportModal() {
     document.getElementById('sourcesReportModal').classList.remove('active');
 }
 
+let currentActiveArticleId = null;
+
 // Open Article Detail Modal
 function openFeynmanModal(articleId) {
+    currentActiveArticleId = articleId;
     const article = currentArticles.find(a => a.id === articleId);
     if (!article) return;
 
@@ -436,9 +439,46 @@ function openFeynmanModal(articleId) {
         linkBtn.style.display = 'none';
     }
 
+    const simplifyBtn = document.getElementById('modalSimplifyBtn');
+    if (simplifyBtn) {
+        simplifyBtn.innerText = "✨ Gemini AI Breakdown";
+        simplifyBtn.disabled = false;
+    }
+
     currentModalText = `${article.title}. ${article.feynman_eli5}`;
 
     document.getElementById('feynmanModal').classList.add('active');
+}
+
+async function triggerModalOnDemandSimplify() {
+    if (!currentActiveArticleId) return;
+    const btn = document.getElementById('modalSimplifyBtn');
+    if (btn) {
+        btn.innerText = "⏳ Gemini AI Thinking...";
+        btn.disabled = true;
+    }
+    
+    try {
+        const res = await fetch(`/api/simplify/${currentActiveArticleId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+            await loadArticles();
+            const updated = data.data;
+            if (updated) {
+                const idx = currentArticles.findIndex(a => a.id === currentActiveArticleId);
+                if (idx !== -1) currentArticles[idx] = updated;
+            }
+            openFeynmanModal(currentActiveArticleId);
+        }
+    } catch (err) {
+        console.error("Error running on-demand simplification:", err);
+        alert("Rate limit reached. Please try again in a few seconds.");
+    } finally {
+        if (btn) {
+            btn.innerText = "✨ Gemini AI Breakdown";
+            btn.disabled = false;
+        }
+    }
 }
 
 function closeFeynmanModal() {

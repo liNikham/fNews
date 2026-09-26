@@ -19,11 +19,18 @@ def generate_feynman_breakdown(title: str, raw_text: str, category: str = "Finan
     else:
         return _generate_local_feynman(title, raw_text, category)
 
+import time
+import random
+
+_last_gemini_call_timestamp = 0.0
+
 def _generate_with_gemini(title: str, raw_text: str, category: str) -> dict:
     """
-    Uses Gemini API with model gemini-3.1-flash-lite.
-    Tailored for a Software Engineer (1 year experience): system-architecture mental models, adult analytical tone, and signal vs. noise evaluation.
+    Uses Gemini API strictly with model gemini-3.1-flash-lite.
+    Includes rate-limiting throttling and exponential backoff retry for 429 quota handling.
     """
+    global _last_gemini_call_timestamp
+    
     system_prompt = f"""
 You are an elite Financial System Architect and Behavioral Macro Strategist combining Richard Feynman's First Principles analytical clarity with Ray Dalio & Warren Buffett's wealth-building mental models.
 Your audience is a smart Software Engineer in India (1 year of tech experience) who is highly logical and analytical, but lacks a formal finance background.
@@ -63,33 +70,57 @@ Analyze this news thoroughly and return STRICT JSON with these exact 9 keys:
         }
     }
     
-    res = httpx.post(url, json=payload, timeout=25.0)
-    if res.status_code == 200:
-        data = res.json()
-        text_content = data['candidates'][0]['content']['parts'][0]['text']
-        parsed = json.loads(text_content)
-        parsed['importance_score'] = int(parsed.get('importance_score', 8))
-        if not parsed.get('news_summary'):
-            parsed['news_summary'] = raw_text[:350]
-        # Ensure backwards-compatibility mapping for existing DB schema
-        if 'system_mechanics' in parsed and not parsed.get('feynman_eli5'):
-            parsed['feynman_eli5'] = parsed['system_mechanics']
-        elif 'feynman_eli5' in parsed and not parsed.get('system_mechanics'):
-            parsed['system_mechanics'] = parsed['feynman_eli5']
+    max_retries = 3
+    base_delay = 2.0
+    
+    for attempt in range(max_retries):
+        # Throttle: ensure at least 1.5s between consecutive API calls to prevent RPM bursts
+        elapsed = time.time() - _last_gemini_call_timestamp
+        if elapsed < 1.5:
+            time.sleep(1.5 - elapsed)
             
-        if 'signal_vs_noise' in parsed and not parsed.get('feynman_money_psychology'):
-            parsed['feynman_money_psychology'] = parsed['signal_vs_noise']
-        elif 'feynman_money_psychology' in parsed and not parsed.get('signal_vs_noise'):
-            parsed['signal_vs_noise'] = parsed['feynman_money_psychology']
+        try:
+            _last_gemini_call_timestamp = time.time()
+            res = httpx.post(url, json=payload, timeout=25.0)
             
-        if 'real_world_connections' in parsed and not parsed.get('feynman_future_impact'):
-            parsed['feynman_future_impact'] = parsed['real_world_connections']
-        elif 'feynman_future_impact' in parsed and not parsed.get('real_world_connections'):
-            parsed['real_world_connections'] = parsed['feynman_future_impact']
+            if res.status_code == 200:
+                data = res.json()
+                text_content = data['candidates'][0]['content']['parts'][0]['text']
+                parsed = json.loads(text_content)
+                parsed['importance_score'] = int(parsed.get('importance_score', 8))
+                if not parsed.get('news_summary'):
+                    parsed['news_summary'] = raw_text[:350]
+                # Ensure backwards-compatibility mapping for existing DB schema
+                if 'system_mechanics' in parsed and not parsed.get('feynman_eli5'):
+                    parsed['feynman_eli5'] = parsed['system_mechanics']
+                elif 'feynman_eli5' in parsed and not parsed.get('system_mechanics'):
+                    parsed['system_mechanics'] = parsed['feynman_eli5']
+                    
+                if 'signal_vs_noise' in parsed and not parsed.get('feynman_money_psychology'):
+                    parsed['feynman_money_psychology'] = parsed['signal_vs_noise']
+                elif 'feynman_money_psychology' in parsed and not parsed.get('signal_vs_noise'):
+                    parsed['signal_vs_noise'] = parsed['feynman_money_psychology']
+                    
+                if 'real_world_connections' in parsed and not parsed.get('feynman_future_impact'):
+                    parsed['feynman_future_impact'] = parsed['real_world_connections']
+                elif 'feynman_future_impact' in parsed and not parsed.get('real_world_connections'):
+                    parsed['real_world_connections'] = parsed['feynman_future_impact']
+                    
+                return parsed
+                
+            elif res.status_code == 429:
+                wait_time = base_delay * (2 ** attempt) + random.uniform(0.5, 1.5)
+                print(f"[Feynman Engine] Gemini 429 Rate Limit (Attempt {attempt+1}/{max_retries}). Backing off for {wait_time:.1f}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"[Feynman Engine] Gemini API Status {res.status_code}: {res.text[:100]}")
+                break
+        except Exception as e:
+            print(f"[Feynman Engine] Exception on Gemini API request (Attempt {attempt+1}): {e}")
+            time.sleep(base_delay * (attempt + 1))
             
-        return parsed
-    else:
-        raise Exception(f"Gemini API error (Status {res.status_code} for {model}): {res.text[:120]}")
+    print("[Feynman Engine] Gemini API limit reached after backoff retries. Using local synthesizer fallback.")
+    return _generate_local_feynman(title, raw_text, category)
 
 def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
     """

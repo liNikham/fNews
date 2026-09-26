@@ -8,7 +8,8 @@ from pydantic import BaseModel
 
 from db.database import (
     init_db, get_articles, toggle_bookmark, mark_as_read, 
-    get_stats, save_article, get_source_stats, get_raw_scraped_feed
+    get_stats, save_article, get_source_stats, get_raw_scraped_feed,
+    get_article_by_id, update_article_feynman_data
 )
 from scraper.news_scraper import run_all_scrapers
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
@@ -146,6 +147,26 @@ def simplify_custom_text(req: SimplifyTextRequest):
         
     feynman_breakdown = generate_feynman_breakdown(req.title or "Financial Article", req.text, req.category)
     return {"status": "success", "data": feynman_breakdown}
+
+@app.post("/api/simplify/{article_id}")
+async def simplify_existing_article(article_id: int):
+    """Generates Gemini AI system breakdown on demand for a single article."""
+    article = get_article_by_id(article_id)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+        
+    title = article['title']
+    content = article.get('content') or article.get('raw_summary') or title
+    category = article.get('category', 'Finance')
+    
+    # Run Gemini AI breakdown with backoff & rate-limiting
+    feynman_breakdown = await asyncio.to_thread(generate_feynman_breakdown, title, content, category)
+    
+    # Update article record in DB
+    update_article_feynman_data(article_id, feynman_breakdown)
+    
+    updated_article = get_article_by_id(article_id)
+    return {"status": "success", "data": updated_article}
 
 @app.post("/api/bookmark/{article_id}")
 def bookmark_article(article_id: int):
