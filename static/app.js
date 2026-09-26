@@ -133,10 +133,16 @@ function renderArticlesGrid(articles) {
                 
                 <h3 class="card-headline">${escapeHtml(article.title)}</h3>
 
-                <!-- 1. ELI5 -->
+                <!-- 1. NEWS SUMMARY (WHAT HAPPENED) -->
+                <div class="news-summary-card-box">
+                    <div class="box-label-header" style="color: #60a5fa;">📰 News Summary</div>
+                    <div class="box-body-text">${escapeHtml(article.news_summary || article.raw_summary || article.content)}</div>
+                </div>
+
+                <!-- 2. ELI5 -->
                 <div class="feynman-eli5-card-box">
                     <div class="box-label-header" style="color: var(--emerald);">👶 Feynman ELI5</div>
-                    <div class="box-body-text">${escapeHtml(article.feynman_eli5 || article.raw_summary)}</div>
+                    <div class="box-body-text">${escapeHtml(article.feynman_eli5)}</div>
                 </div>
 
                 <!-- 2. DETECTIVE LOOPHOLES -->
@@ -301,7 +307,7 @@ async function openRawFeedModal() {
                     <h4 style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">${escapeHtml(item.title)}</h4>
                     
                     <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
-                        ${escapeHtml(item.raw_summary || item.title)}
+                        ${escapeHtml(item.news_summary || item.raw_summary || item.title)}
                     </p>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
@@ -386,6 +392,10 @@ function openFeynmanModal(articleId) {
     document.getElementById('modalImportance').innerText = `🔥 Importance: ${article.importance_score || 8}/10`;
     document.getElementById('modalSource').innerText = article.source_name || 'Indian News';
     document.getElementById('modalTitle').innerText = article.title;
+    const newsSumElem = document.getElementById('modalNewsSummary');
+    if (newsSumElem) {
+        newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No summary available';
+    }
     document.getElementById('modalEli5').innerText = article.feynman_eli5 || 'No summary available';
     document.getElementById('modalDetective').innerText = article.detective_loopholes || 'No fine print caught.';
     document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'No specific action required.';

@@ -397,6 +397,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* FEYNMAN BOXES IN CARDS */
+.news-summary-card-box {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+
 .feynman-eli5-card-box {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.06) 100%);
     border-left: 4px solid var(--emerald);

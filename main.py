@@ -119,6 +119,7 @@ async def simplify_custom_url(req: SimplifyUrlRequest):
         "pub_date": "Just Now",
         "raw_summary": article_text[:400],
         "content": article_text[:2500],
+        "news_summary": feynman_breakdown.get("news_summary", article_text[:400]),
         "feynman_eli5": feynman_breakdown.get("feynman_eli5", ""),
         "feynman_jargon": feynman_breakdown.get("feynman_jargon", []),
         "feynman_past_context": feynman_breakdown.get("feynman_past_context", ""),

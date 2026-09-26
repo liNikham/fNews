@@ -33,15 +33,16 @@ ARTICLE TEXT: {raw_text[:2500]}
 
 Analyze this news like a financial detective investigating a case.
 
-Return STRICT JSON with these exact 8 keys:
-1. "importance_score": (Integer 1 to 10). Rate how significantly this news affects a person's wallet, savings, investments, loan EMIs, or taxes in India. (Assign < 6 for filler/clickbait news, 7-10 for high-impact news).
-2. "feynman_eli5": Deep 3-sentence First Principles explanation using vivid real-world analogies (e.g. tea stalls, local shops, piggy banks). Explain the core physics of how the money moves.
-3. "detective_loopholes": 🕵️‍♂️ Detective Breakdown & Hidden Loopholes: 3-4 bullet points uncovering fine print, institutional tricks, tax implications, hidden catches, or arbitrage opportunities that 99% of retail readers miss.
-4. "actionable_blueprint": 🎯 Actionable Wealth Blueprint ("What Should I Do With This Info to Become Rich?"): 3-4 concrete, practical steps the user can execute today (e.g., "Pre-pay home loan before month end", "Switch FD duration to 399 days", "Accumulate Banking ETFs during dip", "Optimize tax under Section 80C/10(14)").
-5. "feynman_jargon": Array of [{{"term": "Term Name", "eli5": "Simple definition", "analogy": "Analogy"}}] for 2-4 financial terms in the article.
-6. "feynman_past_context": 2-3 sentences uncovering the hidden root cause and historical backdrop behind this news.
-7. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
-8. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
+Return STRICT JSON with these exact 9 keys:
+1. "news_summary": 📰 Clear 3-sentence factual summary of the core news event (Who, What, Key Numbers, Dates, and Official Decisions). Focus strictly on actual news facts without jargon.
+2. "importance_score": (Integer 1 to 10). Rate how significantly this news affects a person's wallet, savings, investments, loan EMIs, or taxes in India. (Assign < 6 for filler/clickbait news, 7-10 for high-impact news).
+3. "feynman_eli5": Deep 3-sentence First Principles explanation using vivid real-world analogies (e.g. tea stalls, local shops, piggy banks). Explain the core physics of how the money moves.
+4. "detective_loopholes": 🕵️‍♂️ Detective Breakdown & Hidden Loopholes: 3-4 bullet points uncovering fine print, institutional tricks, tax implications, hidden catches, or arbitrage opportunities that 99% of retail readers miss.
+5. "actionable_blueprint": 🎯 Actionable Wealth Blueprint ("What Should I Do With This Info to Become Rich?"): 3-4 concrete, practical steps the user can execute today (e.g., "Pre-pay home loan before month end", "Switch FD duration to 399 days", "Accumulate Banking ETFs during dip", "Optimize tax under Section 80C/10(14)").
+6. "feynman_jargon": Array of [{{"term": "Term Name", "eli5": "Simple definition", "analogy": "Analogy"}}] for 2-4 financial terms in the article.
+7. "feynman_past_context": 2-3 sentences uncovering the hidden root cause and historical backdrop behind this news.
+8. "feynman_future_impact": 3 bullet points showing domino effects on personal wallet, loan rates, stock market sectors, and Indian economy.
+9. "feynman_money_psychology": 1 powerful behavioral finance / investor psychology takeaway to avoid traps (FOMO, panic selling, institutional manipulation).
 """
     clean_model = GEMINI_MODEL.strip().replace("models/", "").replace("'", "").replace('"', '') if GEMINI_MODEL else "gemini-3.1-flash-lite"
     
@@ -73,6 +74,8 @@ Return STRICT JSON with these exact 8 keys:
                 text_content = data['candidates'][0]['content']['parts'][0]['text']
                 parsed = json.loads(text_content)
                 parsed['importance_score'] = int(parsed.get('importance_score', 8))
+                if not parsed.get('news_summary'):
+                    parsed['news_summary'] = raw_text[:350]
                 return parsed
             else:
                 last_err = f"Status {res.status_code} for model {model}: {res.text[:80]}"
@@ -104,6 +107,7 @@ def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
         } for item in jargon_matched[:4]
     ]
 
+    news_summary = f"Summary: {title}. {raw_text[:300]}..." if len(raw_text) > 300 else f"Summary: {title}. {raw_text}"
     eli5_summary = f"Imagine a big village marketplace where water flow is controlled by a central tap. In this news: '{title[:70]}...', major institutional players adjusted how cash flows through Indian businesses and consumer pockets."
     
     detective_loopholes = (
@@ -126,6 +130,7 @@ def _generate_local_feynman(title: str, raw_text: str, category: str) -> dict:
     money_psychology = "💡 **Detective Wealth Wisdom**: News creates noise; fundamentals build wealth. Never buy or sell investments out of emotional panic. Use market headlines as data points to execute your disciplined long-term asset allocation plan."
 
     return {
+        "news_summary": news_summary,
         "importance_score": importance_score,
         "feynman_eli5": eli5_summary,
         "detective_loopholes": detective_loopholes,

@@ -79,6 +79,7 @@ async def scrape_single_source(source: dict) -> dict:
                 "pub_date": pub_date,
                 "raw_summary": summary[:400],
                 "content": content[:2500],
+                "news_summary": ensure_string(feynman_data.get("news_summary", summary[:400])),
                 "feynman_eli5": ensure_string(feynman_data.get("feynman_eli5", "")),
                 "feynman_jargon": feynman_data.get("feynman_jargon", []),
                 "feynman_past_context": ensure_string(feynman_data.get("feynman_past_context", "")),

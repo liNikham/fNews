@@ -29,6 +29,7 @@ def init_db():
             feynman_money_psychology TEXT,
             detective_loopholes TEXT,
             actionable_blueprint TEXT,
+            news_summary TEXT,
             importance_score INTEGER DEFAULT 7,
             is_bookmarked INTEGER DEFAULT 0,
             is_read INTEGER DEFAULT 0,
@@ -56,6 +57,8 @@ def init_db():
         cursor.execute("ALTER TABLE articles ADD COLUMN detective_loopholes TEXT")
     if "actionable_blueprint" not in columns:
         cursor.execute("ALTER TABLE articles ADD COLUMN actionable_blueprint TEXT")
+    if "news_summary" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN news_summary TEXT")
     if "importance_score" not in columns:
         cursor.execute("ALTER TABLE articles ADD COLUMN importance_score INTEGER DEFAULT 7")
     if "is_read" not in columns:
@@ -136,6 +139,8 @@ def save_article(article_data: dict) -> int:
     else:
         jargon_json = ensure_string(jargon_val)
         
+    news_summary_val = article_data.get('news_summary') or article_data.get('raw_summary', '')
+    
     try:
         cursor.execute('''
             INSERT INTO articles (
@@ -143,8 +148,8 @@ def save_article(article_data: dict) -> int:
                 raw_summary, content, feynman_eli5, feynman_jargon,
                 feynman_past_context, feynman_future_impact,
                 feynman_connected_news, feynman_money_psychology,
-                detective_loopholes, actionable_blueprint, importance_score, is_read
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                detective_loopholes, actionable_blueprint, news_summary, importance_score, is_read
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ''', (
             ensure_string(article_data.get('title', '')),
             ensure_string(article_data.get('link', '')),
@@ -162,6 +167,7 @@ def save_article(article_data: dict) -> int:
             ensure_string(article_data.get('feynman_money_psychology', '')),
             ensure_string(article_data.get('detective_loopholes', '')),
             ensure_string(article_data.get('actionable_blueprint', '')),
+            ensure_string(news_summary_val),
             int(article_data.get('importance_score', 7))
         ))
         conn.commit()
