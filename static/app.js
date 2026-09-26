@@ -128,41 +128,21 @@ function renderArticlesGrid(articles) {
             <div>
                 <div class="card-top-meta">
                     <span class="badge-cat">${escapeHtml(article.category || 'Finance')}</span>
-                    <span class="importance-pill">🔥 Top #${index + 1} (Score ${importance}/10)</span>
+                    <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">${escapeHtml(article.source_name || 'Publisher')} • ${escapeHtml(article.pub_date || '')}</span>
+                    <span class="importance-pill">🔥 Score ${importance}/10</span>
                 </div>
                 
                 <h3 class="card-headline">${escapeHtml(article.title)}</h3>
 
-                <!-- 1. NEWS SUMMARY (WHAT HAPPENED) -->
-                <div class="news-summary-card-box">
-                    <div class="box-label-header" style="color: #60a5fa;">📰 News Summary</div>
-                    <div class="box-body-text">${escapeHtml(article.news_summary || article.raw_summary || article.content)}</div>
+                <!-- NEWS SUMMARY FACT SNIPPET -->
+                <div style="font-size: 13.5px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px; background: rgba(15, 23, 42, 0.6); padding: 12px 14px; border-radius: var(--radius-md); border-left: 3px solid var(--cyan);">
+                    ${escapeHtml(article.news_summary || article.raw_summary || article.content || article.title)}
                 </div>
 
-                <!-- 2. SYSTEM MECHANICS -->
-                <div class="feynman-eli5-card-box">
-                    <div class="box-label-header" style="color: var(--emerald);">⚙️ System Mechanics</div>
-                    <div class="box-body-text">${escapeHtml(article.system_mechanics || article.feynman_eli5)}</div>
-                </div>
-
-                <!-- 3. INSTITUTIONAL FINE PRINT -->
-                ${article.detective_loopholes ? `
-                <div class="detective-card-box">
-                    <div class="box-label-header" style="color: var(--amber);">🕵️‍♂️ Institutional Fine Print & Catches</div>
-                    <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.detective_loopholes)}</div>
-                </div>
-                ` : ''}
-
-                <!-- 4. RATIONAL ACTION PLAN -->
-                ${article.actionable_blueprint ? `
-                <div class="action-blueprint-card-box">
-                    <div class="box-label-header" style="color: var(--primary);">🎯 Rational Action Plan</div>
-                    <div class="box-body-text" style="white-space: pre-line;">${escapeHtml(article.actionable_blueprint)}</div>
-                </div>
-                ` : ''}
-
-                <div class="jargon-tags-container">
-                    ${jargonPillsHtml}
+                <div style="margin-bottom: 16px;">
+                    <button class="btn btn-gradient" style="width: 100%; padding: 10px 16px; font-size: 13px; font-weight: 700;" onclick="openFeynmanModal(${article.id}, true)">
+                        ✨ Explain / System Breakdown ➔
+                    </button>
                 </div>
             </div>
 
@@ -172,13 +152,10 @@ function renderArticlesGrid(articles) {
                 </button>
 
                 <div class="action-icon-group">
-                    <button class="icon-action-btn" onclick="openFeynmanModal(${article.id})" title="Full Detective Analysis">
-                        🧠
-                    </button>
                     <button class="icon-action-btn ${isBookmarked ? 'active' : ''}" onclick="toggleBookmark(${article.id}, this)" title="Bookmark">
                         🔖
                     </button>
-                    <button class="icon-action-btn" onclick="speakText('${escapeHtml(article.title)}. ${escapeHtml(article.feynman_eli5)}')" title="Listen Read-Aloud">
+                    <button class="icon-action-btn" onclick="speakText('${escapeHtml(article.title)}. ${escapeHtml(article.news_summary || article.raw_summary)}')" title="Listen Read-Aloud">
                         🔊
                     </button>
                 </div>
@@ -386,7 +363,7 @@ function closeSourcesReportModal() {
 let currentActiveArticleId = null;
 
 // Open Article Detail Modal
-function openFeynmanModal(articleId) {
+function openFeynmanModal(articleId, autoExplain = false) {
     currentActiveArticleId = articleId;
     const article = currentArticles.find(a => a.id === articleId);
     if (!article) return;
@@ -399,9 +376,9 @@ function openFeynmanModal(articleId) {
     if (newsSumElem) {
         newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No summary available';
     }
-    document.getElementById('modalEli5').innerText = article.system_mechanics || article.feynman_eli5 || 'No breakdown available';
-    document.getElementById('modalDetective').innerText = article.detective_loopholes || 'No fine print caught.';
-    document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'No specific action required.';
+    document.getElementById('modalEli5').innerText = article.system_mechanics || article.feynman_eli5 || 'Click "✨ Gemini AI Breakdown" below to generate First-Principles analysis.';
+    document.getElementById('modalDetective').innerText = article.detective_loopholes || 'Click "✨ Gemini AI Breakdown" below for Fine Print catches.';
+    document.getElementById('modalBlueprint').innerText = article.actionable_blueprint || 'Click "✨ Gemini AI Breakdown" below for Action Plan.';
 
     // Jargon list
     const jargonContainer = document.getElementById('modalJargonList');
@@ -445,9 +422,13 @@ function openFeynmanModal(articleId) {
         simplifyBtn.disabled = false;
     }
 
-    currentModalText = `${article.title}. ${article.feynman_eli5}`;
+    currentModalText = `${article.title}. ${article.news_summary || article.raw_summary}`;
 
     document.getElementById('feynmanModal').classList.add('active');
+
+    if (autoExplain && (!article.detective_loopholes || article.detective_loopholes.includes("Institutional Arbitrage"))) {
+        triggerModalOnDemandSimplify();
+    }
 }
 
 async function triggerModalOnDemandSimplify() {
