@@ -2,7 +2,35 @@ import sqlite3
 import json
 import hashlib
 import datetime
+import email.utils
 from config import DB_PATH
+
+def parse_pub_date_to_iso(pub_date_str: str) -> str:
+    """Normalize RFC 2822, ISO, or arbitrary date strings to UTC 'YYYY-MM-DD HH:MM:SS' format."""
+    if not pub_date_str:
+        return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    
+    dt = None
+    try:
+        dt = email.utils.parsedate_to_datetime(pub_date_str)
+    except Exception:
+        pass
+        
+    if not dt:
+        try:
+            dt = datetime.datetime.fromisoformat(pub_date_str)
+        except Exception:
+            pass
+            
+    if not dt:
+        dt = datetime.datetime.now(datetime.timezone.utc)
+        
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    else:
+        dt = dt.astimezone(datetime.timezone.utc)
+        
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def init_db():
     """Initialize SQLite database schema and migrate missing columns."""
@@ -19,6 +47,7 @@ def init_db():
             source_name TEXT,
             category TEXT,
             pub_date TEXT,
+            published_at TIMESTAMP,
             raw_summary TEXT,
             content TEXT,
             feynman_eli5 TEXT,
@@ -63,9 +92,19 @@ def init_db():
         cursor.execute("ALTER TABLE articles ADD COLUMN importance_score INTEGER DEFAULT 7")
     if "is_read" not in columns:
         cursor.execute("ALTER TABLE articles ADD COLUMN is_read INTEGER DEFAULT 0")
+    if "published_at" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN published_at TIMESTAMP")
+
+    # Backfill published_at for existing rows where it's NULL or empty
+    cursor.execute("SELECT id, pub_date, created_at FROM articles WHERE published_at IS NULL OR published_at = ''")
+    unpopulated = cursor.fetchall()
+    for row_id, p_date, c_date in unpopulated:
+        iso_val = parse_pub_date_to_iso(p_date or c_date)
+        cursor.execute("UPDATE articles SET published_at = ? WHERE id = ?", (iso_val, row_id))
 
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_category ON articles(category)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_created_at ON articles(created_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_published_at ON articles(published_at)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_importance ON articles(importance_score)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_is_read ON articles(is_read)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_hash ON articles(link_hash)')
@@ -127,7 +166,7 @@ def ensure_string(val) -> str:
     return str(val)
 
 def save_article(article_data: dict) -> int:
-    """Save parsed & simplified article into DB with strict string normalization."""
+    """Save parsed & simplified article into DB with strict string normalization and published_at timestamp."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
@@ -140,23 +179,26 @@ def save_article(article_data: dict) -> int:
         jargon_json = ensure_string(jargon_val)
         
     news_summary_val = article_data.get('news_summary') or article_data.get('raw_summary', '')
+    pub_date_val = article_data.get('pub_date', '')
+    published_at_val = article_data.get('published_at') or parse_pub_date_to_iso(pub_date_val)
     
     try:
         cursor.execute('''
             INSERT INTO articles (
-                title, link, link_hash, source_name, category, pub_date,
+                title, link, link_hash, source_name, category, pub_date, published_at,
                 raw_summary, content, feynman_eli5, feynman_jargon,
                 feynman_past_context, feynman_future_impact,
                 feynman_connected_news, feynman_money_psychology,
                 detective_loopholes, actionable_blueprint, news_summary, importance_score, is_read
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ''', (
             ensure_string(article_data.get('title', '')),
             ensure_string(article_data.get('link', '')),
             link_hash,
             ensure_string(article_data.get('source_name', 'Indian News')),
             ensure_string(article_data.get('category', 'Finance')),
-            ensure_string(article_data.get('pub_date', '')),
+            ensure_string(pub_date_val),
+            published_at_val,
             ensure_string(article_data.get('raw_summary', '')),
             ensure_string(article_data.get('content', '')),
             ensure_string(article_data.get('feynman_eli5', '')),
@@ -182,9 +224,10 @@ def save_article(article_data: dict) -> int:
         
     return article_id
 
-def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=False, include_read=False):
+def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=False, include_read=False, sort_by="latest"):
     """
-    Retrieve top articles ordered by highest importance_score and recency.
+    Retrieve top articles ordered by recency (latest news) or highest importance_score.
+    Defaults to latest news first so the home page always shows the freshest stories!
     By default, hides marked-as-read articles so new news slides up into the Top 10!
     """
     conn = sqlite3.connect(DB_PATH)
@@ -210,7 +253,10 @@ def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=
         q = f"%{query}%"
         params.extend([q, q, q, q, q, q])
         
-    sql += " ORDER BY importance_score DESC, id DESC LIMIT ? OFFSET ?"
+    if sort_by == "impact":
+        sql += " ORDER BY importance_score DESC, COALESCE(published_at, created_at) DESC, id DESC LIMIT ? OFFSET ?"
+    else:  # "latest" (default)
+        sql += " ORDER BY COALESCE(published_at, created_at) DESC, id DESC LIMIT ? OFFSET ?"
     params.extend([limit, offset])
     
     cursor.execute(sql, params)
@@ -316,9 +362,9 @@ def get_raw_scraped_feed(limit=50):
     cursor = conn.cursor()
     
     cursor.execute('''
-        SELECT id, title, link, source_name, category, pub_date, raw_summary, importance_score, is_read, created_at
+        SELECT id, title, link, source_name, category, pub_date, published_at, raw_summary, importance_score, is_read, created_at
         FROM articles
-        ORDER BY id DESC
+        ORDER BY COALESCE(published_at, created_at) DESC, id DESC
         LIMIT ?
     ''', (limit,))
     

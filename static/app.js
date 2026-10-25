@@ -3,6 +3,7 @@
 let currentCategory = 'all';
 let searchQuery = '';
 let currentLimit = 10; // Strict default limit: Top 10 unread critical stories!
+let currentSort = 'latest'; // Default sort order: 'latest' (newest breaking news) vs 'impact' (highest score)
 let currentArticles = [];
 let currentModalText = '';
 
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     loadArticles();
     
-    // Automatically refresh Top 10 High-Impact news every 15 minutes!
+    // Automatically refresh Top 10 news every 15 minutes!
     setInterval(() => {
         console.log("[Feynman UI] Running 15-minute automatic news refresh...");
         loadStats();
@@ -31,7 +32,7 @@ async function loadStats() {
     }
 }
 
-// Fetch Articles with Filters
+// Fetch Articles with Filters and Sort Order
 async function loadArticles() {
     const grid = document.getElementById('articlesGrid');
     const spinner = document.getElementById('loadingSpinner');
@@ -42,12 +43,12 @@ async function loadArticles() {
     }
 
     try {
-        let url = `/api/news?category=${encodeURIComponent(currentCategory)}&page=1&limit=${currentLimit}`;
+        let url = `/api/news?category=${encodeURIComponent(currentCategory)}&page=1&limit=${currentLimit}&sort_by=${encodeURIComponent(currentSort)}`;
         if (searchQuery) {
             url += `&query=${encodeURIComponent(searchQuery)}`;
         }
         if (currentCategory === 'bookmarked') {
-            url = `/api/news?bookmarked_only=true&limit=${currentLimit}`;
+            url = `/api/news?bookmarked_only=true&limit=${currentLimit}&sort_by=${encodeURIComponent(currentSort)}`;
             if (searchQuery) url += `&query=${encodeURIComponent(searchQuery)}`;
         }
 
@@ -63,6 +64,30 @@ async function loadArticles() {
         spinner.style.display = 'none';
         grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);"><div style="font-size: 48px; margin-bottom: 12px;">⚠️</div><p>Unable to connect to Feynman Finance server.</p></div>`;
     }
+}
+
+// Switch Sort Mode: 'latest' vs 'impact'
+function switchSort(sort) {
+    currentSort = sort;
+    const btnLatest = document.getElementById('sortBtnLatest');
+    const btnImpact = document.getElementById('sortBtnImpact');
+    const bannerTitle = document.getElementById('sectionBannerTitle');
+    const bannerSubtitle = document.getElementById('sectionBannerSubtitle');
+
+    if (btnLatest && btnImpact) {
+        if (sort === 'latest') {
+            btnLatest.classList.add('active');
+            btnImpact.classList.remove('active');
+            if (bannerTitle) bannerTitle.innerHTML = '⚡ TOP 10 LATEST FINANCIAL NEWS STORIES';
+            if (bannerSubtitle) bannerSubtitle.innerText = 'Showing the freshest real-time news updates across top Indian financial publications.';
+        } else {
+            btnImpact.classList.add('active');
+            btnLatest.classList.remove('active');
+            if (bannerTitle) bannerTitle.innerHTML = '🔥 TOP 10 HIGH-IMPACT STORIES FOR YOUR WEALTH';
+            if (bannerSubtitle) bannerSubtitle.innerText = 'Prioritizing stories with the highest direct impact on wealth, markets & savings.';
+        }
+    }
+    loadArticles();
 }
 
 // Toggle between Top 10 view and All Stories view
@@ -98,6 +123,57 @@ async function markAsRead(articleId, cardElement) {
     }
 }
 
+// Clean relative date formatter
+function formatArticleDate(article) {
+    const rawDate = article.published_at || article.pub_date || article.created_at || '';
+    if (!rawDate) return '';
+
+    try {
+        let parseable = rawDate;
+        if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(rawDate)) {
+            parseable = rawDate.replace(' ', 'T') + 'Z';
+        }
+
+        const d = new Date(parseable);
+        if (!isNaN(d.getTime())) {
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            let relativeTime = '';
+            let isFresh = false;
+            if (diffMins < 1) {
+                relativeTime = 'Just now';
+                isFresh = true;
+            } else if (diffMins < 60) {
+                relativeTime = `${diffMins}m ago`;
+                isFresh = true;
+            } else if (diffHours < 24) {
+                relativeTime = `${diffHours}h ago`;
+                isFresh = true;
+            } else if (diffDays === 1) {
+                relativeTime = 'Yesterday';
+            } else if (diffDays < 7) {
+                relativeTime = `${diffDays}d ago`;
+            } else {
+                relativeTime = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            }
+
+            const formattedTime = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const formattedDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+
+            const freshClass = isFresh ? 'time-fresh' : '';
+            return `<span class="time-badge ${freshClass}">⚡ ${formattedDate}, ${formattedTime} • ${relativeTime}</span>`;
+        }
+    } catch (e) {
+        // Fallback
+    }
+
+    return `<span class="time-badge">${escapeHtml(article.pub_date || rawDate)}</span>`;
+}
+
 // Render Articles Grid
 function renderArticlesGrid(articles) {
     const grid = document.getElementById('articlesGrid');
@@ -123,13 +199,18 @@ function renderArticlesGrid(articles) {
 
         const isBookmarked = article.is_bookmarked === 1;
         const importance = article.importance_score || 8;
+        const dateHtml = formatArticleDate(article);
 
         card.innerHTML = `
             <div>
                 <div class="card-top-meta">
                     <span class="badge-cat">${escapeHtml(article.category || 'Finance')}</span>
-                    <span style="font-size: 11px; color: var(--text-dim); font-weight: 500;">${escapeHtml(article.source_name || 'Publisher')} • ${escapeHtml(article.pub_date || '')}</span>
                     <span class="importance-pill">🔥 Score ${importance}/10</span>
+                </div>
+                
+                <div style="font-size: 11.5px; color: var(--text-dim); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                    <span style="font-weight: 600; color: #94a3b8;">${escapeHtml(article.source_name || 'Publisher')}</span>
+                    ${dateHtml}
                 </div>
                 
                 <h3 class="card-headline">${escapeHtml(article.title)}</h3>
@@ -274,11 +355,15 @@ async function openRawFeedModal() {
                 row.style.padding = '14px 18px';
 
                 const isReadStr = item.is_read ? '✔ Read' : '🔥 Unread';
+                const dateHtml = formatArticleDate(item);
 
                 row.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
                         <span class="badge-cat" style="font-size: 10px;">${escapeHtml(item.source_name || 'Publisher')}</span>
-                        <span style="font-size: 11px; color: var(--text-dim);">${escapeHtml(item.pub_date || item.created_at || 'Recently')} • ${isReadStr}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            ${dateHtml}
+                            <span style="font-size: 11px; color: var(--text-dim);">${isReadStr}</span>
+                        </div>
                     </div>
                     
                     <h4 style="font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">${escapeHtml(item.title)}</h4>
@@ -370,7 +455,8 @@ function openFeynmanModal(articleId) {
 
     document.getElementById('modalCategory').innerText = article.category || 'Finance';
     document.getElementById('modalImportance').innerText = `🔥 Importance: ${article.importance_score || 8}/10`;
-    document.getElementById('modalSource').innerText = article.source_name || 'Indian News';
+    const dateHtml = formatArticleDate(article);
+    document.getElementById('modalSource').innerHTML = `${escapeHtml(article.source_name || 'Indian News')} • ${dateHtml}`;
     document.getElementById('modalTitle').innerText = article.title;
     const newsSumElem = document.getElementById('modalNewsSummary');
     if (newsSumElem) {

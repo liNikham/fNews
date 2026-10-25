@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Feynman Finance India — Top 10 Wealth Detective Engine</title>
     <meta name="description" content="Automated Indian financial news engine focusing strictly on Top 10 Unread High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint.">
-    <link rel="stylesheet" href="/static/styles.css?v=3.2">
+    <link rel="stylesheet" href="/static/styles.css?v=3.3">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 </head>
 <body>
@@ -93,18 +93,24 @@
         <!-- MAIN CARDS CONTAINER -->
         <main id="mainContent">
             <!-- SECTION HEADER BANNER -->
-            <div id="sectionHeaderBanner" style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%); border-left: 4px solid var(--amber); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+            <div id="sectionHeaderBanner" style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%); border-left: 4px solid var(--primary); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                 <div>
-                    <h3 style="font-size: 16px; color: var(--amber); display: flex; align-items: center; gap: 8px;">
-                        🔥 TOP 10 UNREAD HIGH-IMPACT STORIES FOR YOUR WEALTH
+                    <h3 id="sectionBannerTitle" style="font-size: 16px; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
+                        ⚡ TOP 10 LATEST FINANCIAL NEWS STORIES
                     </h3>
-                    <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
-                        Mark a story as read to immediately pull the next fresh news item into your Top 10!
+                    <p id="sectionBannerSubtitle" style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                        Showing the freshest real-time news updates across top Indian financial publications.
                     </p>
                 </div>
-                <button class="btn btn-glass" style="font-size: 12px; padding: 6px 14px;" id="toggleLimitBtn" onclick="toggleLimitView()">
-                    View All Stories ➔
-                </button>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="sort-switcher">
+                        <button class="sort-pill active" id="sortBtnLatest" onclick="switchSort('latest')" title="Sort by latest published time">⚡ Latest News</button>
+                        <button class="sort-pill" id="sortBtnImpact" onclick="switchSort('impact')" title="Sort by highest impact wealth score">🔥 High Impact</button>
+                    </div>
+                    <button class="btn btn-glass" style="font-size: 12px; padding: 6px 14px;" id="toggleLimitBtn" onclick="toggleLimitView()">
+                        View All Stories ➔
+                    </button>
+                </div>
             </div>
 
             <div id="articlesGrid" class="news-cards-grid">
@@ -279,6 +285,6 @@
         </button>
     </nav>
 
-    <script src="/static/app.js?v=3.2"></script>
+    <script src="/static/app.js?v=3.3"></script>
 </body>
 </html>

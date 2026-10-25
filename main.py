@@ -68,9 +68,10 @@ def fetch_news(
     category: str = Query("all", description="Category filter"),
     query: str = Query(None, description="Search keyword"),
     page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),  # Defaults to Top 10 High-Impact Stories!
+    limit: int = Query(10, ge=1, le=100),  # Defaults to Top 10 Stories!
     bookmarked_only: bool = Query(False),
-    include_read: bool = Query(False)
+    include_read: bool = Query(False),
+    sort_by: str = Query("latest", description="Sort order: 'latest' or 'impact'")
 ):
     offset = (page - 1) * limit
     articles = get_articles(
@@ -79,7 +80,8 @@ def fetch_news(
         limit=limit,
         offset=offset,
         bookmarked_only=bookmarked_only,
-        include_read=include_read
+        include_read=include_read,
+        sort_by=sort_by
     )
     return {"status": "success", "page": page, "count": len(articles), "articles": articles}
 

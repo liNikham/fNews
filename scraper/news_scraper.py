@@ -6,7 +6,7 @@ import re
 from config import NEWS_SOURCES, MAX_ARTICLES_PER_FEED, MIN_IMPORTANCE_SCORE
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
 from engine.feynman import generate_feynman_breakdown, _generate_local_feynman
-from db.database import article_exists, save_article, record_source_stat, ensure_string
+from db.database import article_exists, save_article, record_source_stat, ensure_string, parse_pub_date_to_iso
 
 def safe_str(val: str) -> str:
     """Safe ASCII string representation for console printing."""
@@ -54,6 +54,16 @@ async def scrape_single_source(source: dict) -> dict:
                 
             summary = clean_html_tags(getattr(entry, 'summary', getattr(entry, 'description', '')))
             pub_date = getattr(entry, 'published', getattr(entry, 'updated', str(datetime.datetime.now())))
+            published_at = parse_pub_date_to_iso(pub_date)
+            
+            # Skip old/archived news (older than 30 days) to keep feed fresh
+            try:
+                pub_dt = datetime.datetime.strptime(published_at, "%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+                now_utc = datetime.datetime.now(datetime.timezone.utc)
+                if (now_utc - pub_dt).days > 30:
+                    continue
+            except Exception:
+                pass
             
             content = summary
             if len(summary) < 150:
@@ -75,6 +85,7 @@ async def scrape_single_source(source: dict) -> dict:
                 "source_name": source_name,
                 "category": category,
                 "pub_date": pub_date,
+                "published_at": published_at,
                 "raw_summary": summary[:400],
                 "content": content[:2500],
                 "news_summary": summary[:400],

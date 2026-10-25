@@ -34,13 +34,13 @@ NEWS_SOURCES = [
     {
         "name": "Google News - Indian Stock Markets",
         "category": "Stocks & Equity",
-        "url": "https://news.google.com/rss/search?q=Nifty+Sensex+Indian+Stock+Market&hl=en-IN&gl=IN&ceid=IN:en",
+        "url": "https://news.google.com/rss/search?q=Nifty+Sensex+Indian+Stock+Market+when:7d&hl=en-IN&gl=IN&ceid=IN:en",
         "type": "rss"
     },
     {
         "name": "Google News - Banking & RBI",
         "category": "Banking & RBI",
-        "url": "https://news.google.com/rss/search?q=RBI+Repo+Rate+Indian+Banks&hl=en-IN&gl=IN&ceid=IN:en",
+        "url": "https://news.google.com/rss/search?q=RBI+Repo+Rate+Indian+Banks+when:7d&hl=en-IN&gl=IN&ceid=IN:en",
         "type": "rss"
     },
     {
