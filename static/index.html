@@ -3,250 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feynman Finance India — Top 10 Wealth Detective Engine</title>
-    <meta name="description" content="Automated Indian financial news engine focusing strictly on Top 10 Unread High-Impact Stories with Feynman First Principles & Financial Detective Wealth Blueprint.">
-    <link rel="stylesheet" href="/static/styles.css?v=3.3">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    <title>Feynman Finance — Wealth Detective & Financial Intelligence Terminal</title>
+    <meta name="description" content="State-of-the-art Indian financial news intelligence engine focusing on Top 10 High-Impact Stories with First-Principles Mechanics & Institutional Catches.">
+    <link rel="stylesheet" href="/static/styles.css?v=6.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
 <body>
+
+    <!-- TOP LIVE MARKET TICKER TAPE -->
+    <div class="market-ticker-wrap">
+        <div class="ticker-inner">
+            <div class="ticker-item"><span class="ticker-name">NIFTY 50</span> <span class="ticker-price">24,852.15</span> <span class="ticker-change ticker-up">▲ +0.64%</span></div>
+            <div class="ticker-item"><span class="ticker-name">SENSEX</span> <span class="ticker-price">81,381.30</span> <span class="ticker-change ticker-up">▲ +0.58%</span></div>
+            <div class="ticker-item"><span class="ticker-name">BANK NIFTY</span> <span class="ticker-price">51,215.80</span> <span class="ticker-change ticker-up">▲ +0.72%</span></div>
+            <div class="ticker-item"><span class="ticker-name">INDIA VIX</span> <span class="ticker-price">13.42</span> <span class="ticker-change ticker-down">▼ -2.15%</span></div>
+            <div class="ticker-item"><span class="ticker-name">USD/INR</span> <span class="ticker-price">84.07</span> <span class="ticker-change ticker-down">▼ -0.04%</span></div>
+            <div class="ticker-item"><span class="ticker-name">BRENT CRUDE</span> <span class="ticker-price">$74.29</span> <span class="ticker-change ticker-up">▲ +0.85%</span></div>
+            <div class="ticker-item"><span class="ticker-name">GOLD 24K</span> <span class="ticker-price">₹78,450</span> <span class="ticker-change ticker-up">▲ +0.32%</span></div>
+            <div class="ticker-item"><span class="ticker-name">10Y G-SEC</span> <span class="ticker-price">6.78%</span> <span class="ticker-change ticker-down">▼ -0.02%</span></div>
+            <!-- Duplicate for infinite marquee loop -->
+            <div class="ticker-item"><span class="ticker-name">NIFTY 50</span> <span class="ticker-price">24,852.15</span> <span class="ticker-change ticker-up">▲ +0.64%</span></div>
+            <div class="ticker-item"><span class="ticker-name">SENSEX</span> <span class="ticker-price">81,381.30</span> <span class="ticker-change ticker-up">▲ +0.58%</span></div>
+            <div class="ticker-item"><span class="ticker-name">BANK NIFTY</span> <span class="ticker-price">51,215.80</span> <span class="ticker-change ticker-up">▲ +0.72%</span></div>
+            <div class="ticker-item"><span class="ticker-name">INDIA VIX</span> <span class="ticker-price">13.42</span> <span class="ticker-change ticker-down">▼ -2.15%</span></div>
+            <div class="ticker-item"><span class="ticker-name">USD/INR</span> <span class="ticker-price">84.07</span> <span class="ticker-change ticker-down">▼ -0.04%</span></div>
+            <div class="ticker-item"><span class="ticker-name">BRENT CRUDE</span> <span class="ticker-price">$74.29</span> <span class="ticker-change ticker-up">▲ +0.85%</span></div>
+            <div class="ticker-item"><span class="ticker-name">GOLD 24K</span> <span class="ticker-price">₹78,450</span> <span class="ticker-change ticker-up">▲ +0.32%</span></div>
+            <div class="ticker-item"><span class="ticker-name">10Y G-SEC</span> <span class="ticker-price">6.78%</span> <span class="ticker-change ticker-down">▼ -0.02%</span></div>
+        </div>
+    </div>
 
     <div class="app-container">
         
         <!-- HEADER NAVBAR -->
         <header class="header">
-            <a href="#" class="brand">
-                <div class="brand-logo">🧠</div>
-                <div>
-                    <h1 class="brand-title">Feynman Finance</h1>
-                    <div class="brand-tagline">Top 10 Financial Detective Stories</div>
+            <a href="#" class="brand" onclick="switchCategory('all'); return false;">
+                <div class="brand-symbol-box">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div class="brand-text-group">
+                    <div class="brand-title-row">
+                        <span class="brand-title">Feynman Finance</span>
+                        <span class="brand-badge-version">v2.4 Live</span>
+                    </div>
+                    <div class="brand-tagline-row">
+                        <span class="live-indicator-dot"></span>
+                        <span>First-Principles Wealth Detective • 15m Auto-Sync</span>
+                    </div>
                 </div>
             </a>
             
-            <div class="header-controls">
-                <button class="btn btn-glass" onclick="openRawFeedModal()" title="View transparent raw log of all scraped articles">
-                    <span>📡 Scraped Log</span>
+            <div class="header-actions">
+                <!-- Eye Comfort Warmth Picker -->
+                <div class="comfort-picker" title="Eye-Care Paper Warmth (Zero Glare)">
+                    <button class="comfort-btn active" id="comfortParchment" onclick="setEyeComfortTheme('parchment', this)" title="Matte Warm Parchment (Zero Glare)">📜 Paper</button>
+                    <button class="comfort-btn" id="comfortSepia" onclick="setEyeComfortTheme('sepia', this)" title="Deep Sepia (Extra soft night tone)">🌰 Sepia</button>
+                    <button class="comfort-btn" id="comfortAlmond" onclick="setEyeComfortTheme('almond', this)" title="Soft Almond Cream">🧴 Almond</button>
+                </div>
+
+                <button class="btn btn-glass" onclick="openRawFeedModal()" title="View transparent scrape timeline of all publications">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    <span>Terminal Log</span>
                 </button>
-                <button class="btn btn-glass" onclick="triggerManualScrape()" id="scrapeBtn" title="Scrape Fresh News">
-                    <span id="scrapeIcon">🔄</span> <span>Sync News</span>
+                <button class="btn btn-glass" onclick="triggerManualScrape()" id="scrapeBtn" title="Trigger instant news scraping cycle">
+                    <svg id="scrapeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span id="scrapeText">Sync Feed</span>
                 </button>
-                <button class="btn btn-gradient" onclick="openCustomSimplifierModal()">
-                    <span>✨ Simplify URL</span>
+                <button class="btn btn-primary" onclick="openCustomSimplifierModal()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Analyze Article</span>
                 </button>
             </div>
         </header>
 
-        <!-- DASHBOARD STATS BANNER -->
-        <section class="stats-banner">
-            <div class="stat-widget" style="border-left: 4px solid #3b82f6;">
-                <div class="stat-icon-box" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔥</div>
-                <div>
-                    <div class="stat-value" id="statTotalArticles">Top 10</div>
-                    <div class="stat-desc">Unread Critical Stories</div>
+        <!-- KPI METRICS STRIP -->
+        <section class="kpi-strip">
+            <div class="kpi-card" onclick="switchCategory('all');" title="Current unread critical news queue">
+                <div class="kpi-icon-wrap kpi-blue">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                </div>
+                <div class="kpi-data">
+                    <div class="kpi-val" id="statTotalArticles">Top 10</div>
+                    <div class="kpi-label">Priority Queue</div>
+                    <div class="kpi-subtext" id="statUnreadSubtext">Unread High-Impact Stories</div>
+                </div>
+            </div>
+
+            <div class="kpi-card" onclick="openSourcesReportModal()" title="Click to view 10 Indian financial news publishers">
+                <div class="kpi-icon-wrap kpi-emerald">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div class="kpi-data">
+                    <div class="kpi-val" id="statSourceCount">10 Sources</div>
+                    <div class="kpi-label">Market Pipeline</div>
+                    <div class="kpi-subtext">Mint, ET, Moneycontrol, BS ↗</div>
                 </div>
             </div>
             
-            <div class="stat-widget" style="border-left: 4px solid #a855f7;">
-                <div class="stat-icon-box" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🧩</div>
-                <div>
-                    <div class="stat-value" id="statJargonCount">100+</div>
-                    <div class="stat-desc">Terms Decoded</div>
+            <div class="kpi-card" onclick="switchCategory('jargon')" title="Click to explore financial jargon decoded for engineers">
+                <div class="kpi-icon-wrap kpi-purple">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <div class="kpi-data">
+                    <div class="kpi-val" id="statJargonCount">100+</div>
+                    <div class="kpi-label">Decoded Terms</div>
+                    <div class="kpi-subtext">Engineer-Friendly Analogies ↗</div>
                 </div>
             </div>
 
-            <!-- Clickable Sources Stat Card -->
-            <div class="stat-widget" style="border-left: 4px solid #10b981;" onclick="openSourcesReportModal()" title="Click to view source-by-source scraping breakdown">
-                <div class="stat-icon-box" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">📊</div>
-                <div>
-                    <div class="stat-value">10 Sources</div>
-                    <div class="stat-desc">View Scraped Breakdown ↗</div>
+            <div class="kpi-card" onclick="openRawFeedModal()" title="Click to view total news archive">
+                <div class="kpi-icon-wrap kpi-amber">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                 </div>
-            </div>
-
-            <div class="stat-widget" style="border-left: 4px solid #f59e0b;" onclick="openRawFeedModal()" title="Click to view raw scraped feed history">
-                <div class="stat-icon-box" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">📡</div>
-                <div>
-                    <div class="stat-value">Scraped Log</div>
-                    <div class="stat-desc">View All Scraped News ↗</div>
+                <div class="kpi-data">
+                    <div class="kpi-val" id="statArchiveCount">Archive</div>
+                    <div class="kpi-label">Scraped Database</div>
+                    <div class="kpi-subtext">Searchable Raw Feed ↗</div>
                 </div>
             </div>
         </section>
 
         <!-- TOOLBAR: SEARCH & CATEGORY NAVIGATION -->
-        <section class="toolbar-section">
-            <div class="search-field-container">
-                <span class="search-field-icon">🔍</span>
-                <input type="text" class="search-field" id="searchInput" placeholder="Search Nifty, RBI, Repo Rate, Loans, Taxes, Stocks..." onkeyup="handleSearch(event)">
-            </div>
-
-            <div class="categories-scroll" id="categoryTabs">
-                <button class="cat-pill active" onclick="switchCategory('all', this)">🔥 Top 10 Critical Stories</button>
-                <button class="cat-pill" onclick="switchCategory('Stocks & Equity', this)">📈 Stocks & Equity</button>
-                <button class="cat-pill" onclick="switchCategory('Banking & RBI', this)">🏦 Banking & RBI</button>
-                <button class="cat-pill" onclick="switchCategory('Economy & Policy', this)">📊 Economy & Policy</button>
-                <button class="cat-pill" onclick="switchCategory('Savings & Personal Finance', this)">💰 Savings & Mutual Funds</button>
-                <button class="cat-pill" onclick="openRawFeedModal()">📡 Raw Scraped Feed</button>
-                <button class="cat-pill" onclick="switchCategory('bookmarked', this)">🔖 Bookmarks</button>
-                <button class="cat-pill" onclick="switchCategory('jargon', this)">📖 Jargon Buster</button>
-            </div>
-        </section>
-
-        <!-- MAIN CARDS CONTAINER -->
-        <main id="mainContent">
-            <!-- SECTION HEADER BANNER -->
-            <div id="sectionHeaderBanner" style="margin-bottom: 20px; padding: 14px 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%); border-left: 4px solid var(--primary); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-                <div>
-                    <h3 id="sectionBannerTitle" style="font-size: 16px; color: #60a5fa; display: flex; align-items: center; gap: 8px;">
-                        ⚡ TOP 10 LATEST FINANCIAL NEWS STORIES
-                    </h3>
-                    <p id="sectionBannerSubtitle" style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
-                        Showing the freshest real-time news updates across top Indian financial publications.
-                    </p>
+        <section class="toolbar-wrap">
+            <div class="search-and-view-row">
+                <div class="search-box-container">
+                    <svg class="search-icon-inside" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" class="search-input-main" id="searchInput" placeholder="Search by ticker, RBI, Repo Rate, Mutual Funds, Taxes, Stocks (Press '/' to focus)..." onkeyup="handleSearch(event)">
+                    <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" title="Clear search">✕</button>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <div class="sort-switcher">
-                        <button class="sort-pill active" id="sortBtnLatest" onclick="switchSort('latest')" title="Sort by latest published time">⚡ Latest News</button>
-                        <button class="sort-pill" id="sortBtnImpact" onclick="switchSort('impact')" title="Sort by highest impact wealth score">🔥 High Impact</button>
-                    </div>
-                    <button class="btn btn-glass" style="font-size: 12px; padding: 6px 14px;" id="toggleLimitBtn" onclick="toggleLimitView()">
-                        View All Stories ➔
+
+                <div class="view-switcher" title="Toggle Display View">
+                    <button class="view-btn active" id="viewBtnGrid" onclick="setViewMode('grid')" title="Card Grid View">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    </button>
+                    <button class="view-btn" id="viewBtnList" onclick="setViewMode('list')" title="Compact Terminal List View">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
                 </div>
             </div>
 
-            <div id="articlesGrid" class="news-cards-grid">
-                <!-- Top 10 Cards dynamically injected here -->
+            <!-- Category Tab Pills -->
+            <div class="tabs-scroll-row" id="categoryTabs">
+                <button class="tab-pill active" onclick="switchCategory('all', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>Top 10 Critical</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('Stocks & Equity', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    <span>Stocks & Markets</span>
+                    <span class="tab-count-badge" id="badgeStocks">0</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('Banking & RBI', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    <span>Banking & RBI</span>
+                    <span class="tab-count-badge" id="badgeBanking">0</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('Economy & Policy', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Economy & Policy</span>
+                    <span class="tab-count-badge" id="badgeEconomy">0</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('Savings & Personal Finance', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Savings & Mutual Funds</span>
+                    <span class="tab-count-badge" id="badgeSavings">0</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('bookmarked', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    <span>Bookmarks</span>
+                    <span class="tab-count-badge" id="badgeBookmarks">0</span>
+                </button>
+                <button class="tab-pill" onclick="switchCategory('jargon', this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span>Jargon Buster</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- MAIN FEED CONTAINER -->
+        <main id="mainContent">
+            <!-- SECTION META BAR -->
+            <div class="section-meta-bar">
+                <div class="section-title-wrap">
+                    <span class="section-title" id="sectionBannerTitle">
+                        <svg width="16" height="16" fill="none" stroke="#60a5fa" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Top 10 High-Impact Stories</span>
+                    </span>
+                    <span class="section-desc" id="sectionBannerSubtitle">Curated unread financial updates ranked by importance.</span>
+                </div>
+
+                <div class="controls-cluster">
+                    <div class="segmented-control">
+                        <button class="seg-btn active" id="sortBtnLatest" onclick="switchSort('latest')" title="Chronological breaking news first">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Latest</span>
+                        </button>
+                        <button class="seg-btn" id="sortBtnImpact" onclick="switchSort('impact')" title="Highest wealth impact score first">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                            <span>Impact</span>
+                        </button>
+                    </div>
+
+                    <button class="btn btn-glass" style="font-size: 11.5px; padding: 5px 12px;" id="toggleLimitBtn" onclick="toggleLimitView()">
+                        <span>View All (50) ➔</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ARTICLES CONTAINER -->
+            <div id="articlesGrid" class="articles-grid">
+                <!-- Injected via JavaScript -->
             </div>
             
-            <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+            <div id="loadingSpinner" class="spinner-wrap" style="display: none;">
+                <div class="spinner"></div>
+                <div style="font-size: 12px; font-weight: 500;">Retrieving real-time market stories...</div>
+            </div>
         </main>
 
     </div>
 
+    <!-- FEYNMAN DETECTIVE DOSSIER MODAL SHEET -->
+    <div class="modal-backdrop" id="feynmanModal" onclick="handleBackdropClick(event, 'feynmanModal')">
+        <div class="modal-card">
+            <button class="modal-close-btn" onclick="closeFeynmanModal()" title="Close dossier (Esc)">✕</button>
+            
+            <div style="margin-bottom: 18px; padding-right: 40px;">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                    <span class="card-category-pill" id="modalCategory">Stocks & Equity</span>
+                    <span class="score-badge" id="modalImportance">Score 8/10</span>
+                    <span style="font-size: 11.5px; color: var(--text-tertiary);" id="modalSource">LiveMint</span>
+                </div>
+                <h2 id="modalTitle" style="font-size: 21px; line-height: 1.35; color: var(--text-primary);">Article Title</h2>
+            </div>
+
+            <!-- Dossier Navigation Tabs -->
+            <div class="dossier-nav-tabs">
+                <button class="dossier-tab-btn active" onclick="switchDossierTab('tab-brief', this)">
+                    <span>📋 Brief & Facts</span>
+                </button>
+                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-mechanics', this)">
+                    <span>⚙️ First Principles</span>
+                </button>
+                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-catches', this)">
+                    <span>🕵️ Fine Print & Catches</span>
+                </button>
+                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-action', this)">
+                    <span>🎯 Wealth Strategy</span>
+                </button>
+                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-jargon', this)">
+                    <span>🧩 Decoded Jargon</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: Brief & Facts -->
+            <div id="tab-brief" class="dossier-panel active">
+                <div class="dossier-box box-summary">
+                    <div class="dossier-box-label">📰 Executive Fact Summary</div>
+                    <div class="dossier-box-text" id="modalNewsSummary">News summary...</div>
+                </div>
+
+                <div class="dossier-box box-noise">
+                    <div class="dossier-box-label">🎲 Signal vs. Emotional Noise (Bullshit Detector)</div>
+                    <div class="dossier-box-text" id="modalPsychology">Signal vs noise evaluation...</div>
+                </div>
+            </div>
+
+            <!-- Tab 2: First Principles Mechanics -->
+            <div id="tab-mechanics" class="dossier-panel">
+                <div class="dossier-box box-mechanics">
+                    <div class="dossier-box-label">⚙️ System Architecture & First-Principles Mechanics</div>
+                    <div class="dossier-box-text" id="modalEli5">Underlying mechanics breakdown...</div>
+                </div>
+
+                <div class="dossier-box box-macro">
+                    <div class="dossier-box-label">🌐 Real-World Connections & Macro Implications</div>
+                    <div class="dossier-box-text" id="modalPast">System ripple effects across Indian economy...</div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Institutional Catches -->
+            <div id="tab-catches" class="dossier-panel">
+                <div class="dossier-box box-detective">
+                    <div class="dossier-box-label">🕵️‍♂️ Institutional Fine Print, Hidden Catches & Incentives</div>
+                    <div class="dossier-box-text" id="modalDetective">Fine print catches...</div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Wealth Strategy Plan -->
+            <div id="tab-action" class="dossier-panel">
+                <div class="dossier-box box-blueprint">
+                    <div class="dossier-box-label">🎯 Rational Action Plan for Retail Investors</div>
+                    <div class="dossier-box-text" id="modalBlueprint">Action steps...</div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Jargon Decoded -->
+            <div id="tab-jargon" class="dossier-panel">
+                <div id="modalJargonList">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Modal Action Footer -->
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
+                <div style="display: flex; gap: 8px;">
+                    <a href="#" id="modalOriginalLink" target="_blank" class="btn btn-glass" style="font-size: 12px;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span>Open Publisher Source ↗</span>
+                    </a>
+                    <button class="btn btn-glass" onclick="speakCurrentModalText()" id="modalTtsBtn" style="font-size: 12px;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                        <span id="modalTtsLabel">Listen Aloud</span>
+                    </button>
+                </div>
+
+                <button class="btn btn-primary" id="modalSimplifyBtn" onclick="triggerModalOnDemandSimplify()" style="font-size: 12.5px;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>✨ AI Deep Analysis</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- RAW SCRAPED FEED MODAL -->
-    <div class="modal-backdrop" id="rawFeedModal">
-        <div class="modal-container" style="max-width: 820px;">
+    <div class="modal-backdrop" id="rawFeedModal" onclick="handleBackdropClick(event, 'rawFeedModal')">
+        <div class="modal-card" style="max-width: 840px;">
             <button class="modal-close-btn" onclick="closeRawFeedModal()">✕</button>
             
-            <h2 style="margin-bottom: 6px; font-size: 22px;">📡 Live Raw Scraped News Log</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-                Transparent timeline of all raw articles scraped from Google News, Economic Times, LiveMint, Moneycontrol, Business Standard, Financial Express.
-            </p>
+            <div style="margin-bottom: 18px;">
+                <h2 style="font-size: 20px; color: var(--text-primary);">Terminal Feed Log</h2>
+                <p style="font-size: 12.5px; color: var(--text-tertiary); margin-top: 3px;">
+                    Transparent stream of all articles scraped across Indian financial news providers.
+                </p>
+            </div>
 
-            <div id="rawFeedList" style="display: grid; gap: 12px; max-height: 65vh; overflow-y: auto;">
+            <div id="rawFeedList" style="display: flex; flex-direction: column; gap: 8px; max-height: 65vh; overflow-y: auto;">
                 <!-- Dynamically populated -->
             </div>
         </div>
     </div>
 
-    <!-- SOURCE SCRAPING BREAKDOWN REPORT MODAL -->
-    <div class="modal-backdrop" id="sourcesReportModal">
-        <div class="modal-container" style="max-width: 720px;">
+    <!-- SOURCES REPORT MODAL -->
+    <div class="modal-backdrop" id="sourcesReportModal" onclick="handleBackdropClick(event, 'sourcesReportModal')">
+        <div class="modal-card" style="max-width: 740px;">
             <button class="modal-close-btn" onclick="closeSourcesReportModal()">✕</button>
             
-            <h2 style="margin-bottom: 6px; font-size: 22px;">📊 15-Minute Source-Wise Scraping Breakdown</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-                Detailed statistics showing how many news articles were fetched from each news publisher every 15 minutes and how many high-impact stories were saved.
-            </p>
+            <div style="margin-bottom: 18px;">
+                <h2 style="font-size: 20px; color: var(--text-primary);">Scraping Pipeline Status</h2>
+                <p style="font-size: 12.5px; color: var(--text-tertiary); margin-top: 3px;">
+                    Breakdown of news fetched and high-impact stories saved per publisher every 15 minutes.
+                </p>
+            </div>
 
-            <div id="sourcesReportTable" style="display: grid; gap: 10px; max-height: 60vh; overflow-y: auto;">
+            <div id="sourcesReportTable" style="display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto;">
                 <!-- Dynamically populated -->
-            </div>
-        </div>
-    </div>
-
-    <!-- FEYNMAN DETECTIVE ARTICLE DETAIL MODAL SHEET -->
-    <div class="modal-backdrop" id="feynmanModal">
-        <div class="modal-container">
-            <button class="modal-close-btn" onclick="closeFeynmanModal()">✕</button>
-            
-            <div style="margin-bottom: 20px; padding-right: 40px;">
-                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-                    <span class="badge-cat" id="modalCategory">Category</span>
-                    <span class="importance-pill" id="modalImportance">Importance: 9/10</span>
-                    <span style="font-size: 12px; color: var(--text-dim);" id="modalSource">Source</span>
-                </div>
-                <h2 id="modalTitle" style="font-size: 22px; line-height: 1.35;">Article Title</h2>
-            </div>
-
-            <div>
-                <!-- 1. NEWS SUMMARY -->
-                <div class="feynman-modal-section sec-blueprint" style="background: rgba(59, 130, 246, 0.08); border-left-color: var(--primary);">
-                    <div class="section-head" style="color: #60a5fa;">📰 News Summary (What Happened)</div>
-                    <div style="font-size: 14.5px; color: #e2e8f0; line-height: 1.6;" id="modalNewsSummary">News summary...</div>
-                </div>
-
-                <!-- 2. SYSTEM MECHANICS -->
-                <div class="feynman-modal-section sec-eli5">
-                    <div class="section-head">⚙️ System Architecture & First-Principles Mechanics</div>
-                    <div style="font-size: 14.5px; color: #e2e8f0; line-height: 1.6;" id="modalEli5">System mechanics breakdown...</div>
-                </div>
-
-                <!-- 3. SIGNAL VS NOISE -->
-                <div class="feynman-modal-section sec-psychology" style="background: rgba(244, 63, 94, 0.08); border-left-color: #f43f5e; padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px;">
-                    <div class="section-head" style="color: #fb7185;">🎲 Signal vs. Emotional Noise (Evaluate Before Believing)</div>
-                    <div style="font-size: 14px; color: #fecdd3; line-height: 1.55;" id="modalPsychology">Signal vs noise analysis...</div>
-                </div>
-
-                <!-- 4. DETECTIVE ANALYSIS & HIDDEN CATCHES -->
-                <div class="feynman-modal-section sec-detective">
-                    <div class="section-head">🕵️‍♂️ Institutional Fine Print & Hidden Catches</div>
-                    <div style="font-size: 14px; color: #fef08a; white-space: pre-line; line-height: 1.6;" id="modalDetective">Fine print & institutional catches...</div>
-                </div>
-
-                <!-- 5. RATIONAL ACTION PLAN -->
-                <div class="feynman-modal-section sec-blueprint">
-                    <div class="section-head">🎯 Rational Action Plan (Wealth Strategy)</div>
-                    <div style="font-size: 14px; color: #bfdbfe; white-space: pre-line; line-height: 1.6;" id="modalBlueprint">Action blueprint...</div>
-                </div>
-
-                <!-- 6. REAL-WORLD CONNECTIONS -->
-                <div class="feynman-modal-section sec-past">
-                    <div class="section-head">🌐 Real-World Connections (Your Life, Society & Global Macro)</div>
-                    <div style="font-size: 14px; color: #cbd5e1; white-space: pre-line; line-height: 1.55;" id="modalPast">Connections...</div>
-                </div>
-
-                <!-- 7. JARGON DECODER -->
-                <div class="feynman-modal-section sec-jargon">
-                    <div class="section-head">🧩 Financial Terms Decoded for Engineers</div>
-                    <div id="modalJargonList">
-                        <!-- Terms list -->
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
-                <a href="#" id="modalOriginalLink" target="_blank" class="btn btn-glass">🔗 Read Source News</a>
-                <button class="btn btn-gradient" id="modalSimplifyBtn" onclick="triggerModalOnDemandSimplify()">✨ Gemini AI Breakdown</button>
-                <button class="btn btn-glass" onclick="speakCurrentModalText()">🔊 Listen</button>
             </div>
         </div>
     </div>
 
     <!-- CUSTOM URL / TEXT SIMPLIFIER MODAL SHEET -->
-    <div class="modal-backdrop" id="customSimplifierModal">
-        <div class="modal-container" style="max-width: 620px;">
+    <div class="modal-backdrop" id="customSimplifierModal" onclick="handleBackdropClick(event, 'customSimplifierModal')">
+        <div class="modal-card" style="max-width: 600px;">
             <button class="modal-close-btn" onclick="closeCustomSimplifierModal()">✕</button>
             
-            <h2 style="margin-bottom: 8px; font-size: 22px;">✨ Simplify Any Web Article</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 22px;">
-                Paste any news link from Moneycontrol, ET, LiveMint, Reuters, or raw text. Our Financial Detective Engine will analyze it using Feynman principles and generate your wealth blueprint.
-            </p>
-
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Option A: Article Web Link (URL)</label>
-                <input type="url" id="customUrlInput" class="form-input" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: #fff;" placeholder="https://www.moneycontrol.com/news/...">
-            </div>
-
-            <div style="text-align: center; color: var(--text-dim); margin: 10px 0; font-size: 11px; font-weight: 700;">— OR —</div>
-
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Option B: Raw Text Paragraph</label>
-                <textarea id="customTextInput" class="form-textarea" style="width: 100%; min-height: 100px; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: #fff;" placeholder="Paste the news paragraph here..."></textarea>
-            </div>
-
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">Select Category</label>
-                <select id="customCategorySelect" class="form-select" style="width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: #fff;">
+                <h2 style="font-size: 20px; color: var(--text-primary);">Analyze Custom Story</h2>
+                <p style="font-size: 12.5px; color: var(--text-tertiary); margin-top: 3px;">
+                    Paste any article URL or text paragraph. The engine will run First-Principles analysis and generate your institutional blueprint.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Article Web URL (Option A)</label>
+                <input type="url" id="customUrlInput" class="form-input" placeholder="https://www.moneycontrol.com/news/...">
+            </div>
+
+            <div style="text-align: center; color: var(--text-tertiary); margin: 8px 0; font-size: 11px; font-weight: 700;">— OR —</div>
+
+            <div class="form-group">
+                <label class="form-label">Raw Text Body (Option B)</label>
+                <textarea id="customTextInput" class="form-textarea" placeholder="Paste article text snippet here..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Market Category</label>
+                <select id="customCategorySelect" class="form-select">
                     <option value="Stocks & Equity">Stocks & Equity</option>
                     <option value="Banking & RBI">Banking & RBI</option>
                     <option value="Economy & Policy">Economy & Policy</option>
@@ -254,37 +400,39 @@
                 </select>
             </div>
 
-            <button class="btn btn-gradient" style="width: 100%; padding: 14px;" onclick="processCustomSimplification()">
-                🚀 Generate Detective Wealth Blueprint
+            <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="processCustomSimplification()" id="customSubmitBtn">
+                <span>🚀 Generate Detective Wealth Blueprint</span>
             </button>
         </div>
     </div>
 
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- MOBILE BOTTOM NAVIGATION -->
     <nav class="mobile-bottom-nav">
-        <button class="nav-item-btn active" onclick="switchCategory('all'); setMobileNavActive(this)">
-            <span class="nav-item-icon">🔥</span>
+        <button class="mobile-nav-item active" onclick="switchCategory('all'); setMobileNavActive(this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             <span>Top 10</span>
         </button>
-        <button class="nav-item-btn" onclick="switchCategory('Stocks & Equity'); setMobileNavActive(this)">
-            <span class="nav-item-icon">📈</span>
+        <button class="mobile-nav-item" onclick="switchCategory('Stocks & Equity'); setMobileNavActive(this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             <span>Stocks</span>
         </button>
-        <button class="nav-item-btn" onclick="openRawFeedModal()">
-            <span class="nav-item-icon">📡</span>
-            <span>Scraped Log</span>
+        <button class="mobile-nav-item" onclick="openRawFeedModal()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            <span>Feed</span>
         </button>
-
-        <button class="nav-item-btn" onclick="switchCategory('bookmarked'); setMobileNavActive(this)">
-            <span class="nav-item-icon">🔖</span>
+        <button class="mobile-nav-item" onclick="switchCategory('bookmarked'); setMobileNavActive(this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
             <span>Saved</span>
         </button>
-        <button class="nav-item-btn" onclick="openCustomSimplifierModal()">
-            <span class="nav-item-icon">✨</span>
-            <span>Simplify</span>
+        <button class="mobile-nav-item" onclick="openCustomSimplifierModal()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Analyze</span>
         </button>
     </nav>
 
-    <script src="/static/app.js?v=3.3"></script>
+    <script src="/static/app.js?v=6.0"></script>
 </body>
 </html>
