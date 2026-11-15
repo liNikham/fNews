@@ -1524,37 +1524,47 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     background: var(--bg-surface);
     border-top: 1px solid var(--border-subtle);
-    padding: 8px 12px;
+    padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
     justify-content: space-around;
     align-items: center;
     z-index: 999;
+    box-shadow: 0 -4px 20px rgba(35, 25, 15, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
 .mobile-nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 3px;
     background: none;
     border: none;
     color: var(--text-tertiary);
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 10.5px;
+    font-weight: 700;
     font-family: inherit;
     cursor: pointer;
+    min-height: 44px;
+    min-width: 48px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
 }
 
 .mobile-nav-item svg {
-    width: 18px;
-    height: 18px;
+    width: 19px;
+    height: 19px;
 }
 
 .mobile-nav-item.active {
     color: var(--accent-ochre);
+    background: var(--accent-ochre-soft);
 }
 
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS (MOBILE & TABLET EXCELLENCE)
    ========================================================================== */
 @media (max-width: 1200px) {
     .articles-grid {
@@ -1565,33 +1575,341 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .app-container {
-        padding: 14px 16px;
+        padding: 16px 20px;
+    }
+    .search-box-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+    .mobile-bottom-nav {
+        display: flex;
+    }
+    .app-container {
+        padding: 12px 14px;
+    }
+    .market-ticker-wrap {
+        font-size: 11px;
+    }
+    .ticker-item {
+        padding: 0 12px;
+        gap: 5px;
     }
     .header {
-        top: 36px;
-        padding: 12px 16px;
+        top: 33px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        border-radius: var(--radius-md);
     }
     .header-actions .btn span {
         display: none;
     }
-    .kpi-strip {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
     .articles-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 24px;
     }
     .section-meta-bar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+    .controls-cluster {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .segmented-control {
+        flex: 1;
+    }
+    .seg-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 6px 10px;
+    }
+    .modal-backdrop {
+        padding: 0;
+        align-items: flex-end;
     }
     .modal-card {
-        padding: 22px;
-        max-height: 94vh;
+        padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        margin: 0;
+        border-bottom: none;
     }
-    .mobile-bottom-nav {
+    .modal-close-btn {
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+    }
+    .toast-container {
+        bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+        left: 12px;
+        right: 12px;
+        align-items: center;
+    }
+    .toast {
+        max-width: 100%;
+        width: 100%;
+        font-size: 12px;
+        padding: 10px 14px;
+    }
+    /* Prevent iOS auto-zoom on input focus */
+    .form-input, .form-textarea, .form-select, .search-input-main {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .header {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    .header-actions {
+        gap: 6px;
+    }
+    .header-btn-log, .header-btn-analyze {
+        display: none !important;
+    }
+    .comfort-text {
+        display: none !important;
+    }
+    .comfort-btn {
+        padding: 4px 6px;
+        font-size: 11px;
+    }
+    .brand {
+        gap: 8px;
+    }
+    .brand-symbol-box {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+    }
+    .brand-symbol-box svg {
+        width: 17px;
+        height: 17px;
+    }
+    .brand-title {
+        font-size: 15px;
+    }
+    .brand-badge-version {
+        font-size: 8px;
+        padding: 1px 5px;
+    }
+    .brand-tagline-row {
+        display: none !important;
+    }
+    .header-btn-sync {
+        padding: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+    }
+
+    /* Swipeable KPI Strip Carousel */
+    .kpi-strip {
         display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        padding: 2px 2px 8px;
+        margin-bottom: 14px;
+        scrollbar-width: none;
+    }
+    .kpi-strip::-webkit-scrollbar {
+        display: none;
+    }
+    .kpi-card {
+        flex: 0 0 175px;
+        scroll-snap-align: start;
+        padding: 12px 14px;
+        gap: 10px;
+        border-radius: 12px;
+    }
+    .kpi-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+    }
+    .kpi-icon-wrap svg {
+        width: 18px;
+        height: 18px;
+    }
+    .kpi-val {
+        font-size: 18px;
+    }
+    .kpi-label {
+        font-size: 11px;
+    }
+    .kpi-subtext {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 105px;
+    }
+
+    /* Toolbar & Search */
+    .toolbar-wrap {
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .search-and-view-row {
+        gap: 8px;
+    }
+    .search-box-container {
+        max-width: 100%;
+        width: 100%;
+    }
+    .search-input-main {
+        padding: 9px 36px 9px 36px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+    .view-btn {
+        width: 32px;
+        height: 32px;
+    }
+    .tabs-scroll-row {
+        gap: 6px;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .tab-pill {
+        padding: 6px 12px;
+        font-size: 11.5px;
+        border-radius: 8px;
+        gap: 5px;
+    }
+    .tab-pill svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    /* Meta Bar */
+    .section-meta-bar {
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+    }
+    .section-title-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    .section-title {
+        font-size: 13.5px;
+    }
+    .section-desc {
+        font-size: 11px;
+    }
+    .seg-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+    #toggleLimitBtn {
+        padding: 5px 10px;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    /* Article Card */
+    .article-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+        gap: 10px;
+    }
+    .card-header-row {
+        margin-bottom: 8px;
+    }
+    .card-title {
+        font-size: 15.5px;
+        line-height: 1.35;
+        margin-bottom: 8px;
+    }
+    .card-snippet {
+        padding: 9px 11px;
+        font-size: 12px;
+        margin-bottom: 10px;
+        border-radius: 0 6px 6px 0;
+    }
+    .card-time-row {
+        margin-bottom: 10px;
+        font-size: 10.5px;
+    }
+    .card-actions-row {
+        padding-top: 10px;
+        gap: 8px;
+    }
+    .btn-investigate {
+        padding: 8px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+        min-height: 38px;
+    }
+    .action-btn-sm {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        border-radius: 8px;
+    }
+
+    /* Compact List View */
+    .article-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 12px 14px;
+        border-radius: 10px;
+    }
+    .row-meta-top {
+        flex-wrap: wrap;
+        gap: 5px;
+        font-size: 10.5px;
+    }
+    .row-title {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+    .row-actions-col {
+        width: 100%;
+        justify-content: space-between;
+        border-top: 1px solid var(--border-subtle);
+        padding-top: 8px;
+        margin-top: 2px;
+    }
+}
+
+@media (max-width: 380px) {
+    .brand-title {
+        font-size: 14px;
+    }
+    .brand-badge-version {
+        display: none;
+    }
+    .comfort-picker {
+        padding: 1px;
+        gap: 1px;
+    }
+    .comfort-btn {
+        padding: 4px 5px;
+        font-size: 10px;
+    }
+    .kpi-card {
+        flex: 0 0 160px;
+        padding: 10px 12px;
     }
 }

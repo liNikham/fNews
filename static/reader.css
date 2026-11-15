@@ -1080,6 +1080,233 @@
     }
 }
 
+@media (max-width: 640px) {
+    .reader-modal {
+        height: 95vh;
+        max-height: 95vh;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+        margin: 0;
+    }
+
+    .reader-header {
+        padding: 16px 14px 10px;
+    }
+
+    .reader-title {
+        font-size: 19px;
+        line-height: 1.25;
+        margin: 8px 30px 10px 0;
+        letter-spacing: -0.3px;
+    }
+
+    .reader-meta-row {
+        gap: 6px;
+    }
+
+    .reader-source,
+    .reader-time {
+        font-size: 10.5px;
+    }
+
+    .reader-time {
+        padding-right: 36px;
+    }
+
+    .reader-head-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .reader-btn {
+        flex: 1 1 calc(50% - 6px);
+        justify-content: center;
+        font-size: 11px;
+        padding: 6px 8px;
+        min-height: 34px;
+    }
+
+    #modalSimplifyBtn {
+        flex: 1 1 100%;
+    }
+
+    .walk-nav {
+        padding: 6px 10px;
+        gap: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .walk-nav-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    .walk-body {
+        padding: 14px 14px calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .walk-chapter {
+        padding: 16px 0 22px;
+    }
+
+    .chapter-eyebrow {
+        font-size: 9px;
+        gap: 6px;
+    }
+
+    .chapter-title {
+        font-size: 20px;
+        line-height: 1.25;
+    }
+
+    .chapter-bridge {
+        font-size: 15px;
+        line-height: 1.5;
+        margin: 10px 0 14px;
+    }
+
+    .chapter-prose {
+        font-size: 15.5px;
+        line-height: 1.6;
+    }
+
+    .math-prose {
+        font-size: 14.5px;
+    }
+
+    .blackboard {
+        padding: 14px 12px;
+        margin: 14px 0;
+    }
+
+    .blackboard-name {
+        font-size: 11px;
+    }
+
+    .blackboard-formula {
+        font-size: 13px;
+        word-break: break-word;
+        white-space: normal;
+    }
+
+    .symbol-table {
+        font-size: 12px;
+    }
+
+    .symbol-table td:first-child {
+        width: 65px;
+    }
+
+    .checked-math-head {
+        flex-direction: column;
+        gap: 2px;
+        padding: 9px 12px;
+    }
+
+    .checked-math-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        padding: 9px 12px;
+    }
+
+    .checked-math-value {
+        text-align: left;
+        font-size: 12.5px;
+    }
+
+    .signal-row {
+        flex-direction: column;
+        gap: 6px;
+        margin: 12px 0 14px;
+    }
+
+    .claim-card {
+        padding: 10px 12px;
+    }
+
+    .claim-card-text {
+        font-size: 15px;
+    }
+
+    .fine-print {
+        padding: 12px 14px;
+        margin: 16px 0 4px;
+    }
+
+    .fine-print-list {
+        font-size: 12.5px;
+    }
+
+    .rule-card {
+        padding: 14px 14px;
+        margin: 16px 0 4px;
+    }
+
+    .rule-text {
+        font-size: 15.5px;
+    }
+
+    .capital-check {
+        padding: 12px 14px;
+        margin: 16px 0;
+    }
+
+    .capital-check-text {
+        font-size: 15px;
+    }
+
+    .ledger-head {
+        display: none;
+    }
+
+    .ledger-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 10px 12px;
+    }
+
+    .ledger-amount {
+        text-align: left;
+        color: var(--accent-ochre);
+    }
+
+    .dont-do {
+        padding: 12px 14px;
+        margin: 16px 0 4px;
+    }
+
+    .dont-do ul {
+        font-size: 12.5px;
+    }
+
+    .keepsake {
+        padding: 18px 14px 16px;
+        margin-top: 14px;
+    }
+
+    .keepsake-scene {
+        font-size: 18px;
+        line-height: 1.45;
+    }
+
+    .keepsake-three {
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    .word-pill {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .walk-footer {
+        padding: 0 14px calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
 /* Unexplained state invite */
 .walk-invite {
     max-width: 680px;

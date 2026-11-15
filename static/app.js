@@ -411,9 +411,26 @@ function switchCategory(cat, btnElement) {
     if (btnElement) {
         btnElement.classList.add('active');
     } else {
-        const first = document.querySelector('.tab-pill');
-        if (first && cat === 'all') first.classList.add('active');
+        const pills = document.querySelectorAll('.tab-pill');
+        let matched = false;
+        pills.forEach(p => {
+            const attr = p.getAttribute('onclick') || '';
+            if (attr.includes(`'${cat}'`)) {
+                p.classList.add('active');
+                matched = true;
+            }
+        });
+        if (!matched && cat === 'all' && pills.length > 0) pills[0].classList.add('active');
     }
+
+    // Sync mobile bottom navigation active state
+    document.querySelectorAll('.mobile-nav-item').forEach(b => {
+        b.classList.remove('active');
+        const attr = b.getAttribute('onclick') || '';
+        if (attr.includes(`'${cat}'`)) {
+            b.classList.add('active');
+        }
+    });
 
     if (cat === 'jargon') {
         loadJargonDictionaryView();

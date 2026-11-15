@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>The Deep Walk — First-Principles Indian Finance</title>
     <meta name="description" content="Indian financial news explained as one continuous walk: inside the real institutions, the governing mathematics, the incentives, the emotions, and your own money.">
-    <link rel="stylesheet" href="/static/styles.css?v=7.0">
-    <link rel="stylesheet" href="/static/reader.css?v=1.0">
+    <link rel="stylesheet" href="/static/styles.css?v=8.0">
+    <link rel="stylesheet" href="/static/reader.css?v=2.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
 <body>
@@ -59,20 +59,20 @@
             <div class="header-actions">
                 <!-- Eye Comfort Warmth Picker -->
                 <div class="comfort-picker" title="Eye-Care Paper Warmth (Zero Glare)">
-                    <button class="comfort-btn active" id="comfortParchment" onclick="setEyeComfortTheme('parchment', this)" title="Matte Warm Parchment (Zero Glare)">📜 Paper</button>
-                    <button class="comfort-btn" id="comfortSepia" onclick="setEyeComfortTheme('sepia', this)" title="Deep Sepia (Extra soft night tone)">🌰 Sepia</button>
-                    <button class="comfort-btn" id="comfortAlmond" onclick="setEyeComfortTheme('almond', this)" title="Soft Almond Cream">🧴 Almond</button>
+                    <button class="comfort-btn active" id="comfortParchment" onclick="setEyeComfortTheme('parchment', this)" title="Matte Warm Parchment (Zero Glare)">📜 <span class="comfort-text">Paper</span></button>
+                    <button class="comfort-btn" id="comfortSepia" onclick="setEyeComfortTheme('sepia', this)" title="Deep Sepia (Extra soft night tone)">🌰 <span class="comfort-text">Sepia</span></button>
+                    <button class="comfort-btn" id="comfortAlmond" onclick="setEyeComfortTheme('almond', this)" title="Soft Almond Cream">🧴 <span class="comfort-text">Almond</span></button>
                 </div>
 
-                <button class="btn btn-glass" onclick="openRawFeedModal()" title="View transparent scrape timeline of all publications">
+                <button class="btn btn-glass header-btn-log" onclick="openRawFeedModal()" title="View transparent scrape timeline of all publications">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                     <span>Terminal Log</span>
                 </button>
-                <button class="btn btn-glass" onclick="triggerManualScrape()" id="scrapeBtn" title="Trigger instant news scraping cycle">
+                <button class="btn btn-glass header-btn-sync" onclick="triggerManualScrape()" id="scrapeBtn" title="Trigger instant news scraping cycle">
                     <svg id="scrapeIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     <span id="scrapeText">Sync Feed</span>
                 </button>
-                <button class="btn btn-primary" onclick="openCustomSimplifierModal()">
+                <button class="btn btn-primary header-btn-analyze" onclick="openCustomSimplifierModal()">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span>Analyze Article</span>
                 </button>
@@ -370,7 +370,7 @@
         </button>
     </nav>
 
-    <script src="/static/deep-walk.js?v=1.0"></script>
-    <script src="/static/app.js?v=7.0"></script>
+    <script src="/static/deep-walk.js?v=2.0"></script>
+    <script src="/static/app.js?v=8.0"></script>
 </body>
 </html>
