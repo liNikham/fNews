@@ -306,8 +306,8 @@ function renderGridView(articles, container) {
 
             <div>
                 <div class="card-actions-row">
-                    <button class="btn btn-investigate" onclick="openFeynmanModal(${article.id})" title="View First-Principles Breakdown & Institutional Catches">
-                        <span>Investigate Story ➔</span>
+                    <button class="btn btn-investigate" onclick="openFeynmanModal(${article.id})" title="Open the Deep Walk: the fact, the system, the math, the incentives, your money">
+                        <span>Explain Story ➔</span>
                     </button>
 
                     <div class="card-icon-actions">
@@ -363,7 +363,7 @@ function renderListView(articles, container) {
 
             <div class="row-actions-col">
                 <button class="btn btn-investigate" style="padding: 5px 12px; font-size: 11.5px;" onclick="openFeynmanModal(${article.id})">
-                    <span>Investigate</span>
+                    <span>Explain</span>
                 </button>
                 <button class="action-btn-sm" onclick="markAsRead(${article.id}, this.closest('.article-row'))" title="Mark as Read">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -569,150 +569,107 @@ async function triggerManualScrape() {
 }
 
 // ==========================================================================
-// FEYNMAN DETECTIVE DOSSIER MODAL
+// THE DEEP WALK READER
 // ==========================================================================
-function openFeynmanModal(articleId) {
-    currentActiveArticleId = articleId;
-    const article = currentArticles.find(a => a.id === articleId);
+async function openFeynmanModal(articleId, articleOverride = null) {
+    const article = articleOverride || currentArticles.find(a => a.id === articleId);
     if (!article) return;
 
-    // Set top metadata
-    document.getElementById('modalCategory').innerText = article.category || 'Finance';
-    document.getElementById('modalImportance').innerText = `Score ${article.importance_score || 8}/10`;
-    const dateObj = formatArticleDate(article);
-    document.getElementById('modalSource').innerText = `${article.source_name || 'Publisher'} • ${dateObj.text}`;
-    document.getElementById('modalTitle').innerText = article.title;
-
-    // Fact Summary & Noise
-    const newsSumElem = document.getElementById('modalNewsSummary');
-    if (newsSumElem) {
-        newsSumElem.innerText = article.news_summary || article.raw_summary || article.content || 'No news summary available.';
-    }
-    const psychElem = document.getElementById('modalPsychology');
-    if (psychElem) {
-        psychElem.innerText = article.signal_vs_noise || article.feynman_money_psychology || 'Signal is high. Evaluate corporate fundamentals before acting on emotional headlines.';
-    }
-
-    // Mechanics & Connections
-    const eli5Elem = document.getElementById('modalEli5');
-    if (eli5Elem) {
-        eli5Elem.innerText = article.system_mechanics || article.feynman_eli5 || '📌 Click "✨ AI Deep Analysis" below to generate First-Principles System Architecture breakdown.';
-    }
-    const pastElem = document.getElementById('modalPast');
-    if (pastElem) {
-        pastElem.innerText = article.real_world_connections || article.feynman_future_impact || article.feynman_past_context || '📌 Click "✨ AI Deep Analysis" below for real-world macro connections.';
-    }
-
-    // Loopholes & Action Plan
-    const detectiveElem = document.getElementById('modalDetective');
-    if (detectiveElem) {
-        detectiveElem.innerText = article.detective_loopholes || '📌 Click "✨ AI Deep Analysis" below for Institutional Fine Print and regulatory catches.';
-    }
-    const blueprintElem = document.getElementById('modalBlueprint');
-    if (blueprintElem) {
-        blueprintElem.innerText = article.actionable_blueprint || '📌 Click "✨ AI Deep Analysis" below for Rational Action Plan.';
-    }
-
-    // Jargon List
-    const jargonContainer = document.getElementById('modalJargonList');
-    if (jargonContainer) {
-        jargonContainer.innerHTML = '';
-        const jList = article.feynman_jargon || [];
-        
-        if (jList.length === 0) {
-            jargonContainer.innerHTML = `<div style="font-size: 13px; color: var(--text-tertiary); padding: 16px 0;">No jargon decoded yet. Click "✨ AI Deep Analysis" to decode technical terms.</div>`;
-        } else {
-            jList.forEach(j => {
-                const item = document.createElement('div');
-                item.className = 'modal-jargon-card';
-                item.innerHTML = `
-                    <div class="modal-jargon-term">🧩 ${escapeHtml(j.term)}</div>
-                    <div class="modal-jargon-def">${escapeHtml(j.eli5)}</div>
-                    ${j.analogy ? `<div class="modal-jargon-analogy">⚙️ Mental Model: ${escapeHtml(j.analogy)}</div>` : ''}
-                `;
-                jargonContainer.appendChild(item);
-            });
-        }
-    }
-
-    // Original Link
-    const linkBtn = document.getElementById('modalOriginalLink');
-    if (linkBtn) {
-        if (article.link) {
-            linkBtn.href = article.link;
-            linkBtn.style.display = 'inline-flex';
-        } else {
-            linkBtn.style.display = 'none';
-        }
-    }
-
-    // Simplify Button state
+    currentActiveArticleId = articleId;
+    currentModalText = '';
+    stopSpeech();
     const simplifyBtn = document.getElementById('modalSimplifyBtn');
-    if (simplifyBtn) {
-        const hasExplanation = !!(article.detective_loopholes || article.system_mechanics);
-        simplifyBtn.innerHTML = hasExplanation ? `<span>🔄 Re-Analyze with AI</span>` : `<span>✨ AI Deep Analysis</span>`;
-        simplifyBtn.disabled = false;
-    }
-
-    // Reset to first tab
-    switchDossierTab('tab-brief');
-
-    currentModalText = `${article.title}. ${article.news_summary || article.raw_summary || ''}`;
-
+    if (simplifyBtn) simplifyBtn.style.display = '';
     document.getElementById('feynmanModal').classList.add('active');
-}
-
-function switchDossierTab(tabId, btnElement) {
-    document.querySelectorAll('.dossier-tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.dossier-panel').forEach(p => p.classList.remove('active'));
-
-    const panel = document.getElementById(tabId);
-    if (panel) panel.classList.add('active');
-
-    if (btnElement) {
-        btnElement.classList.add('active');
-    } else {
-        const matchingBtn = document.querySelector(`.dossier-tab-btn[onclick*="${tabId}"]`);
-        if (matchingBtn) matchingBtn.classList.add('active');
-    }
-}
-
-async function triggerModalOnDemandSimplify() {
-    if (!currentActiveArticleId) return;
-    const btn = document.getElementById('modalSimplifyBtn');
-    if (btn) {
-        btn.innerHTML = `<span>⏳ Gemini AI Thinking...</span>`;
-        btn.disabled = true;
-    }
-    
-    showToast("Analyzing like a financial detective with Gemini AI...", "info");
+    DeepWalk.showSkeleton(article);
 
     try {
-        const res = await fetch(`/api/simplify/${currentActiveArticleId}`, { method: 'POST' });
-        const data = await res.json();
-        if (data.status === 'success') {
-            await loadArticles();
-            const updated = data.data;
-            if (updated) {
-                const idx = currentArticles.findIndex(a => a.id === currentActiveArticleId);
-                if (idx !== -1) currentArticles[idx] = updated;
-            }
-            openFeynmanModal(currentActiveArticleId);
-            showToast("Analysis complete! Dossier updated.", "success");
-        }
-    } catch (err) {
-        showToast("Gemini AI rate limit reached. Please try again shortly.", "warning");
-    } finally {
-        if (btn) {
-            btn.innerHTML = `<span>✨ AI Deep Analysis</span>`;
-            btn.disabled = false;
-        }
+        const payload = await DeepWalk.fetch(articleId);
+        const modal = document.getElementById('feynmanModal');
+        if (currentActiveArticleId !== articleId || !modal || !modal.classList.contains('active')) return;
+        DeepWalk.render(payload.article || article, payload.walk, payload.source);
+        currentModalText = DeepWalk.getReadableText();
+    } catch (error) {
+        if (currentActiveArticleId !== articleId) return;
+        DeepWalk.renderError(article, 'The Deep Walk could not be loaded. Check that the server is running and try again.', function () {
+            openFeynmanModal(articleId, article);
+        });
+        showToast('Could not load the Deep Walk.', 'warning');
     }
+}
+
+function triggerModalOnDemandSimplify() {
+    if (!currentActiveArticleId) return;
+    const articleId = currentActiveArticleId;
+    const btn = document.getElementById('modalSimplifyBtn');
+    const label = btn ? btn.querySelector('span') : null;
+    const steps = [
+        'Reading the article…',
+        'Entering the institution…',
+        'Deriving the equation…',
+        'Interrogating the claim…',
+        'Checking your ₹50,000…',
+        'Building the frame…'
+    ];
+    let stepIndex = 0;
+    let timer = null;
+
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = steps[0];
+    timer = setInterval(() => {
+        stepIndex = (stepIndex + 1) % steps.length;
+        if (label) label.textContent = steps[stepIndex];
+    }, 4200);
+
+    showToast('Walking through the system. This usually takes 20–60 seconds.', 'info', 4200);
+
+    fetch(`/api/simplify/${articleId}`, { method: 'POST' })
+        .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success' || !data.walk) {
+                throw new Error(data.detail || 'Analysis failed');
+            }
+            const fallbackArticle = currentArticles.find(a => a.id === articleId) || { id: articleId, title: 'Financial story' };
+            const article = data.data || fallbackArticle;
+            const source = data.walk_source || 'deep';
+            if (source === 'local') {
+                // Do not pin an offline fallback in the client cache; the next
+                // open should fetch whatever the server actually persisted.
+                DeepWalk.invalidate(articleId);
+            } else {
+                DeepWalk.put(articleId, { article: article, walk: data.walk, source: source });
+            }
+
+            const idx = currentArticles.findIndex(a => a.id === articleId);
+            if (idx !== -1) currentArticles[idx] = Object.assign({}, currentArticles[idx], article);
+
+            const modal = document.getElementById('feynmanModal');
+            if (currentActiveArticleId === articleId && modal && modal.classList.contains('active')) {
+                DeepWalk.render(article, data.walk, source);
+                currentModalText = DeepWalk.getReadableText();
+            }
+
+            if (source === 'local') {
+                showToast('AI limit reached — showing an offline walk. Re-run later for the live version.', 'warning', 5200);
+            } else {
+                showToast('Deep Walk complete.', 'success');
+            }
+        })
+        .catch(() => {
+            showToast('The Deep Walk hit a rate limit or server error. Try again shortly.', 'warning', 5000);
+        })
+        .finally(() => {
+            if (timer) clearInterval(timer);
+            if (btn) btn.disabled = false;
+            if (label) label.textContent = 'Re-walk with AI';
+        });
 }
 
 function closeFeynmanModal() {
     const modal = document.getElementById('feynmanModal');
     if (modal) modal.classList.remove('active');
+    if (window.DeepWalk) DeepWalk.close();
+    currentActiveArticleId = null;
     stopSpeech();
 }
 
@@ -727,6 +684,24 @@ function closeCustomSimplifierModal() {
     document.getElementById('customSimplifierModal').classList.remove('active');
 }
 
+function showStandaloneWalk(walk, category) {
+    if (!walk || !window.DeepWalk) return;
+    currentActiveArticleId = null;
+    stopSpeech();
+    const article = {
+        title: 'Custom Financial Story',
+        category: category || 'Finance',
+        source_name: 'Pasted text',
+        importance_score: walk.importance_score || 8,
+        link: ''
+    };
+    document.getElementById('feynmanModal').classList.add('active');
+    DeepWalk.render(article, walk, (walk.meta && walk.meta.generator === 'local') ? 'local' : 'deep');
+    currentModalText = DeepWalk.getReadableText();
+    const simplifyBtn = document.getElementById('modalSimplifyBtn');
+    if (simplifyBtn) simplifyBtn.style.display = 'none';
+}
+
 async function processCustomSimplification() {
     const url = document.getElementById('customUrlInput').value.trim();
     const text = document.getElementById('customTextInput').value.trim();
@@ -739,11 +714,11 @@ async function processCustomSimplification() {
 
     const submitBtn = document.getElementById('customSubmitBtn');
     if (submitBtn) {
-        submitBtn.innerHTML = `<span>⏳ Analyzing with Gemini AI...</span>`;
+        submitBtn.innerHTML = `<span>Walking the system…</span>`;
         submitBtn.disabled = true;
     }
 
-    showToast("Processing article with First-Principles engine...", "info");
+    showToast("Walking the story through the real system...", "info");
 
     try {
         let endpoint = '/api/simplify-url';
@@ -762,7 +737,7 @@ async function processCustomSimplification() {
 
         const data = await res.json();
         if (submitBtn) {
-            submitBtn.innerHTML = `<span>🚀 Generate Detective Wealth Blueprint</span>`;
+            submitBtn.innerHTML = `<span>Walk this story</span>`;
             submitBtn.disabled = false;
         }
 
@@ -774,12 +749,17 @@ async function processCustomSimplification() {
             showToast("✨ Story analyzed and added to priority feed!", "success");
             loadStats();
             await loadArticles();
+            if (endpoint === '/api/simplify-url' && data.data && data.data.id) {
+                openFeynmanModal(data.data.id, data.data);
+            } else if (data.walk) {
+                showStandaloneWalk(data.walk, category);
+            }
         } else {
             showToast(data.detail || "Could not analyze article.", "warning");
         }
     } catch (err) {
         if (submitBtn) {
-            submitBtn.innerHTML = `<span>🚀 Generate Detective Wealth Blueprint</span>`;
+            submitBtn.innerHTML = `<span>Walk this story</span>`;
             submitBtn.disabled = false;
         }
         showToast("Server error during article analysis.", "warning");
@@ -816,6 +796,7 @@ async function openRawFeedModal() {
                 const isReadStr = item.is_read ? '✔ Read' : '● Unread';
                 const dateObj = formatArticleDate(item);
                 const dotClass = getSourceDotClass(item.source_name);
+                const sourceUrl = safeHttpUrl(item.link);
 
                 row.innerHTML = `
                     <div style="flex: 1;">
@@ -834,9 +815,9 @@ async function openRawFeedModal() {
                         </p>
                         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 6px;">
                             <span class="score-badge" style="font-size: 10px;">Score: ${item.importance_score || 8}/10</span>
-                            <a href="${escapeHtml(item.link)}" target="_blank" style="font-size: 11.5px; color: var(--accent-ochre); text-decoration: none; font-weight: 600;">
+                            ${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer" style="font-size: 11.5px; color: var(--accent-ochre); text-decoration: none; font-weight: 600;">
                                 Source Article ↗
-                            </a>
+                            </a>` : ''}
                         </div>
                     </div>
                 `;
@@ -1020,20 +1001,23 @@ function stopSpeech() {
     }
     isSpeaking = false;
     const modalBtn = document.getElementById('modalTtsLabel');
-    if (modalBtn) modalBtn.innerText = 'Listen Aloud';
+    if (modalBtn) modalBtn.innerText = 'Listen';
 }
 
 function speakCurrentModalText() {
+    if (!currentModalText && window.DeepWalk) {
+        currentModalText = DeepWalk.getReadableText();
+    }
     if (!currentModalText) return;
     const btn = document.getElementById('modalTtsBtn');
     const label = document.getElementById('modalTtsLabel');
 
     if (isSpeaking) {
         stopSpeech();
-        if (label) label.innerText = 'Listen Aloud';
+        if (label) label.innerText = 'Listen';
     } else {
         toggleSpeech(currentModalText, btn);
-        if (label) label.innerText = 'Stop Audio';
+        if (label) label.innerText = 'Stop listening';
     }
 }
 
@@ -1049,10 +1033,25 @@ function closeAllModals() {
 
 function handleBackdropClick(event, modalId) {
     if (event.target.id === modalId) {
+        if (modalId === 'feynmanModal') {
+            closeFeynmanModal();
+            return;
+        }
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.remove('active');
-        if (modalId === 'feynmanModal') stopSpeech();
     }
+}
+
+function safeHttpUrl(url) {
+    const raw = String(url || '').trim();
+    if (!raw) return '';
+    try {
+        const parsed = new URL(raw, window.location.origin);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') return parsed.href;
+    } catch (error) {
+        // Malformed URLs are not linkable.
+    }
+    return '';
 }
 
 function escapeHtml(str) {

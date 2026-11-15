@@ -1,4 +1,5 @@
 import os
+import json
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException
@@ -7,13 +8,13 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from db.database import (
-    init_db, get_articles, toggle_bookmark, mark_as_read, 
+    init_db, get_articles, toggle_bookmark, mark_as_read,
     get_stats, save_article, get_source_stats, get_raw_scraped_feed,
-    get_article_by_id, update_article_feynman_data
+    get_article_by_id, update_article_deep
 )
 from scraper.news_scraper import run_all_scrapers
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
-from engine.feynman import generate_feynman_breakdown
+from engine.feynman import generate_deep_walk, derive_legacy_columns, build_legacy_walk
 from engine.jargon_dictionary import FINANCIAL_JARGON_DB
 from scheduler.cron_job import start_hourly_scheduler
 
@@ -41,9 +42,9 @@ async def lifespan(app: FastAPI):
     print("[Server] Shutdown complete.")
 
 app = FastAPI(
-    title="Feynman Finance India — Top 10 Wealth Detective Engine",
-    description="Automated Indian Financial News Aggregator focusing on Top 10 High-Impact Unread Stories with Feynman First Principles & Financial Detective Wealth Blueprint",
-    version="2.3.0",
+    title="The Deep Walk — First-Principles Indian Finance",
+    description="Indian financial news explained as one continuous walk: the fact, the real institutions, the governing mathematics, the incentives, the emotions, and your own money.",
+    version="3.0.0",
     lifespan=lifespan
 )
 
@@ -62,6 +63,37 @@ def read_root():
 def health_check():
     """Render / Cloud platform health check endpoint."""
     return {"status": "ok", "service": "feynman-finance-india"}
+
+
+def public_article(article: dict) -> dict:
+    """Article row without the heavy Deep Walk JSON (sent separately)."""
+    if not article:
+        return article
+    clean = dict(article)
+    clean.pop("deep_explanation", None)
+    return clean
+
+
+@app.get("/api/article/{article_id}")
+def fetch_article_detail(article_id: int):
+    """One story plus its Deep Walk. Old stories are adapted server-side into
+    the same continuous format so the frontend never needs two layouts."""
+    article = get_article_by_id(article_id)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    walk = article.get("deep_explanation")
+    walk_source = "deep"
+    if not walk:
+        walk = build_legacy_walk(article)
+        walk_source = "unexplained" if (walk.get("meta") or {}).get("unexplained") else "legacy"
+
+    return {
+        "status": "success",
+        "article": public_article(article),
+        "walk": walk,
+        "walk_source": walk_source
+    }
 
 @app.get("/api/news")
 def fetch_news(
@@ -112,8 +144,13 @@ async def simplify_custom_url(req: SimplifyUrlRequest):
     if len(title) > 120:
         title = title[:117] + "..."
         
-    feynman_breakdown = generate_feynman_breakdown(title, article_text, req.category)
-    
+    walk = generate_deep_walk(title, article_text, req.category)
+    derived = derive_legacy_columns(walk)
+    try:
+        jargon_list = json.loads(derived.get("feynman_jargon") or "[]")
+    except Exception:
+        jargon_list = []
+
     article_record = {
         "title": title,
         "link": req.url,
@@ -122,20 +159,27 @@ async def simplify_custom_url(req: SimplifyUrlRequest):
         "pub_date": "Just Now",
         "raw_summary": article_text[:400],
         "content": article_text[:2500],
-        "news_summary": feynman_breakdown.get("news_summary", article_text[:400]),
-        "feynman_eli5": feynman_breakdown.get("feynman_eli5", ""),
-        "feynman_jargon": feynman_breakdown.get("feynman_jargon", []),
-        "feynman_past_context": feynman_breakdown.get("feynman_past_context", ""),
-        "feynman_future_impact": feynman_breakdown.get("feynman_future_impact", ""),
-        "feynman_connected_news": feynman_breakdown.get("feynman_connected_news", ""),
-        "feynman_money_psychology": feynman_breakdown.get("feynman_money_psychology", ""),
-        "detective_loopholes": feynman_breakdown.get("detective_loopholes", ""),
-        "actionable_blueprint": feynman_breakdown.get("actionable_blueprint", ""),
-        "importance_score": feynman_breakdown.get("importance_score", 9)
+        "news_summary": walk.get("news_summary", article_text[:400]),
+        "feynman_eli5": derived.get("feynman_eli5", ""),
+        "feynman_jargon": jargon_list,
+        "feynman_past_context": derived.get("feynman_past_context", ""),
+        "feynman_future_impact": derived.get("feynman_future_impact", ""),
+        "feynman_connected_news": derived.get("feynman_connected_news", ""),
+        "feynman_money_psychology": derived.get("feynman_money_psychology", ""),
+        "detective_loopholes": derived.get("detective_loopholes", ""),
+        "actionable_blueprint": derived.get("actionable_blueprint", ""),
+        "importance_score": derived.get("importance_score", 8),
+        "deep_explanation": walk
     }
-    
-    save_article(article_record)
-    return {"status": "success", "data": article_record}
+
+    article_id = save_article(article_record)
+    article_record["id"] = article_id
+    return {
+        "status": "success",
+        "data": article_record,
+        "walk": walk,
+        "walk_source": (walk.get("meta") or {}).get("generator", "local")
+    }
 
 class SimplifyTextRequest(BaseModel):
     title: str
@@ -146,29 +190,47 @@ class SimplifyTextRequest(BaseModel):
 def simplify_custom_text(req: SimplifyTextRequest):
     if not req.text:
         raise HTTPException(status_code=400, detail="Text body is required")
-        
-    feynman_breakdown = generate_feynman_breakdown(req.title or "Financial Article", req.text, req.category)
-    return {"status": "success", "data": feynman_breakdown}
+
+    walk = generate_deep_walk(req.title or "Financial Article", req.text, req.category)
+    return {
+        "status": "success",
+        "data": walk,
+        "walk": walk,
+        "walk_source": (walk.get("meta") or {}).get("generator", "local")
+    }
 
 @app.post("/api/simplify/{article_id}")
 async def simplify_existing_article(article_id: int):
-    """Generates Gemini AI system breakdown on demand for a single article."""
+    """Generates the Deep Walk on demand for a single article."""
     article = get_article_by_id(article_id)
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
-        
+
     title = article['title']
     content = article.get('content') or article.get('raw_summary') or title
     category = article.get('category', 'Finance')
-    
-    # Run Gemini AI breakdown with backoff & rate-limiting
-    feynman_breakdown = await asyncio.to_thread(generate_feynman_breakdown, title, content, category)
-    
-    # Update article record in DB
-    update_article_feynman_data(article_id, feynman_breakdown)
-    
-    updated_article = get_article_by_id(article_id)
-    return {"status": "success", "data": updated_article}
+    existing_walk = article.get('deep_explanation')
+
+    walk = await asyncio.to_thread(generate_deep_walk, title, content, category)
+    generator = (walk.get('meta') or {}).get('generator', 'local')
+    derived = derive_legacy_columns(walk)
+
+    # A live AI walk overwrites the legacy columns. An offline walk may be
+    # stored for an article that has nothing better, but it never replaces
+    # existing good analysis.
+    should_persist = generator == 'gemini' or not existing_walk
+    if should_persist:
+        update_article_deep(article_id, walk, derived, overwrite_legacy=(generator == 'gemini'))
+        updated_article = get_article_by_id(article_id)
+    else:
+        updated_article = article
+
+    return {
+        "status": "success",
+        "data": public_article(updated_article),
+        "walk": walk,
+        "walk_source": generator
+    }
 
 @app.post("/api/bookmark/{article_id}")
 def bookmark_article(article_id: int):

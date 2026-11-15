@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feynman Finance — Wealth Detective & Financial Intelligence Terminal</title>
-    <meta name="description" content="State-of-the-art Indian financial news intelligence engine focusing on Top 10 High-Impact Stories with First-Principles Mechanics & Institutional Catches.">
-    <link rel="stylesheet" href="/static/styles.css?v=6.0">
+    <title>The Deep Walk — First-Principles Indian Finance</title>
+    <meta name="description" content="Indian financial news explained as one continuous walk: inside the real institutions, the governing mathematics, the incentives, the emotions, and your own money.">
+    <link rel="stylesheet" href="/static/styles.css?v=7.0">
+    <link rel="stylesheet" href="/static/reader.css?v=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
 <body>
@@ -46,11 +47,11 @@
                 <div class="brand-text-group">
                     <div class="brand-title-row">
                         <span class="brand-title">Feynman Finance</span>
-                        <span class="brand-badge-version">v2.4 Live</span>
+                        <span class="brand-badge-version">v3.0 Deep Walk</span>
                     </div>
                     <div class="brand-tagline-row">
                         <span class="live-indicator-dot"></span>
-                        <span>First-Principles Wealth Detective • 15m Auto-Sync</span>
+                        <span>The Deep Walk • First-Principles Finance • 15m Sync</span>
                     </div>
                 </div>
             </a>
@@ -227,105 +228,41 @@
 
     </div>
 
-    <!-- FEYNMAN DETECTIVE DOSSIER MODAL SHEET -->
+    <!-- THE DEEP WALK READER -->
     <div class="modal-backdrop" id="feynmanModal" onclick="handleBackdropClick(event, 'feynmanModal')">
-        <div class="modal-card">
-            <button class="modal-close-btn" onclick="closeFeynmanModal()" title="Close dossier (Esc)">✕</button>
-            
-            <div style="margin-bottom: 18px; padding-right: 40px;">
-                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
-                    <span class="card-category-pill" id="modalCategory">Stocks & Equity</span>
+        <div class="modal-card reader-modal">
+            <button class="modal-close-btn" onclick="closeFeynmanModal()" title="Close the walk (Esc)">✕</button>
+
+            <header class="reader-header">
+                <div class="reader-meta-row">
+                    <span class="card-category-pill" id="modalCategory">Finance</span>
                     <span class="score-badge" id="modalImportance">Score 8/10</span>
-                    <span style="font-size: 11.5px; color: var(--text-tertiary);" id="modalSource">LiveMint</span>
+                    <span class="reader-source" id="modalSource">Publisher • Recent</span>
+                    <span class="reader-time" id="modalReadTime">Deep walk</span>
                 </div>
-                <h2 id="modalTitle" style="font-size: 21px; line-height: 1.35; color: var(--text-primary);">Article Title</h2>
-            </div>
-
-            <!-- Dossier Navigation Tabs -->
-            <div class="dossier-nav-tabs">
-                <button class="dossier-tab-btn active" onclick="switchDossierTab('tab-brief', this)">
-                    <span>📋 Brief & Facts</span>
-                </button>
-                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-mechanics', this)">
-                    <span>⚙️ First Principles</span>
-                </button>
-                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-catches', this)">
-                    <span>🕵️ Fine Print & Catches</span>
-                </button>
-                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-action', this)">
-                    <span>🎯 Wealth Strategy</span>
-                </button>
-                <button class="dossier-tab-btn" onclick="switchDossierTab('tab-jargon', this)">
-                    <span>🧩 Decoded Jargon</span>
-                </button>
-            </div>
-
-            <!-- Tab 1: Brief & Facts -->
-            <div id="tab-brief" class="dossier-panel active">
-                <div class="dossier-box box-summary">
-                    <div class="dossier-box-label">📰 Executive Fact Summary</div>
-                    <div class="dossier-box-text" id="modalNewsSummary">News summary...</div>
-                </div>
-
-                <div class="dossier-box box-noise">
-                    <div class="dossier-box-label">🎲 Signal vs. Emotional Noise (Bullshit Detector)</div>
-                    <div class="dossier-box-text" id="modalPsychology">Signal vs noise evaluation...</div>
-                </div>
-            </div>
-
-            <!-- Tab 2: First Principles Mechanics -->
-            <div id="tab-mechanics" class="dossier-panel">
-                <div class="dossier-box box-mechanics">
-                    <div class="dossier-box-label">⚙️ System Architecture & First-Principles Mechanics</div>
-                    <div class="dossier-box-text" id="modalEli5">Underlying mechanics breakdown...</div>
-                </div>
-
-                <div class="dossier-box box-macro">
-                    <div class="dossier-box-label">🌐 Real-World Connections & Macro Implications</div>
-                    <div class="dossier-box-text" id="modalPast">System ripple effects across Indian economy...</div>
-                </div>
-            </div>
-
-            <!-- Tab 3: Institutional Catches -->
-            <div id="tab-catches" class="dossier-panel">
-                <div class="dossier-box box-detective">
-                    <div class="dossier-box-label">🕵️‍♂️ Institutional Fine Print, Hidden Catches & Incentives</div>
-                    <div class="dossier-box-text" id="modalDetective">Fine print catches...</div>
-                </div>
-            </div>
-
-            <!-- Tab 4: Wealth Strategy Plan -->
-            <div id="tab-action" class="dossier-panel">
-                <div class="dossier-box box-blueprint">
-                    <div class="dossier-box-label">🎯 Rational Action Plan for Retail Investors</div>
-                    <div class="dossier-box-text" id="modalBlueprint">Action steps...</div>
-                </div>
-            </div>
-
-            <!-- Tab 5: Jargon Decoded -->
-            <div id="tab-jargon" class="dossier-panel">
-                <div id="modalJargonList">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-
-            <!-- Modal Action Footer -->
-            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;">
-                <div style="display: flex; gap: 8px;">
-                    <a href="#" id="modalOriginalLink" target="_blank" class="btn btn-glass" style="font-size: 12px;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span>Open Publisher Source ↗</span>
+                <h2 class="reader-title" id="modalTitle">Article title</h2>
+                <div id="walkBanner"></div>
+                <div class="reader-head-actions">
+                    <a href="#" id="modalOriginalLink" target="_blank" rel="noopener noreferrer" class="btn btn-glass reader-btn">
+                        <span>Open source ↗</span>
                     </a>
-                    <button class="btn btn-glass" onclick="speakCurrentModalText()" id="modalTtsBtn" style="font-size: 12px;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                        <span id="modalTtsLabel">Listen Aloud</span>
+                    <button class="btn btn-glass reader-btn" onclick="speakCurrentModalText()" id="modalTtsBtn">
+                        <span id="modalTtsLabel">Listen</span>
+                    </button>
+                    <button class="btn btn-primary reader-btn" id="modalSimplifyBtn" onclick="triggerModalOnDemandSimplify()">
+                        <span>Walk this with AI</span>
                     </button>
                 </div>
+            </header>
 
-                <button class="btn btn-primary" id="modalSimplifyBtn" onclick="triggerModalOnDemandSimplify()" style="font-size: 12.5px;">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    <span>✨ AI Deep Analysis</span>
-                </button>
+            <div class="walk-progress-track" aria-hidden="true"><div class="walk-progress-fill" id="walkProgress"></div></div>
+            <nav class="walk-nav" id="walkNav" aria-label="Deep Walk chapters"></nav>
+
+            <div class="walk-scroll" id="walkScrollRoot">
+                <div class="walk-body" id="walkBody"></div>
+                <footer class="walk-footer">
+                    <p>This is financial education, not a personalised investment recommendation. Assumptions are written down; verify source figures before acting.</p>
+                </footer>
             </div>
         </div>
     </div>
@@ -374,7 +311,7 @@
             <div style="margin-bottom: 20px;">
                 <h2 style="font-size: 20px; color: var(--text-primary);">Analyze Custom Story</h2>
                 <p style="font-size: 12.5px; color: var(--text-tertiary); margin-top: 3px;">
-                    Paste any article URL or text paragraph. The engine will run First-Principles analysis and generate your institutional blueprint.
+                    Paste any article URL or text paragraph. The engine will walk it: the real system, the governing math, the incentives, the emotions, and your own money.
                 </p>
             </div>
 
@@ -401,7 +338,7 @@
             </div>
 
             <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="processCustomSimplification()" id="customSubmitBtn">
-                <span>🚀 Generate Detective Wealth Blueprint</span>
+                <span>Walk this story</span>
             </button>
         </div>
     </div>
@@ -433,6 +370,7 @@
         </button>
     </nav>
 
-    <script src="/static/app.js?v=6.0"></script>
+    <script src="/static/deep-walk.js?v=1.0"></script>
+    <script src="/static/app.js?v=7.0"></script>
 </body>
 </html>

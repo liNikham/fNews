@@ -18,6 +18,37 @@ if os.path.exists(env_file):
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = "gemini-3.1-flash-lite"
 
+# --------------------------------------------------------------------------
+# THE READER'S REAL NUMBERS
+# Every Deep Walk is calibrated to this profile. Edit these values when your
+# income, savings or living costs change; new explanations pick them up.
+# Explanations are generated on demand, so they always use the values present
+# at generation time.
+# --------------------------------------------------------------------------
+USER_PROFILE = {
+    "occupation": "software engineer in India",
+    "monthly_income_inr": 50000,
+    "savings_inr": 200000,
+    "savings_place": "savings bank account",
+    "assumed_monthly_expenses_inr": 30000,  # explicit assumption for emergency-fund math
+    "emergency_months_target": 6,
+}
+
+# Explicit assumptions used for the server-checked arithmetic strip.
+ASSUMED_SAVINGS_RATE_PCT = 3.0
+ASSUMED_INFLATION_PCT = 5.0
+ASSUMED_SIP_RETURN_PCT = 12.0
+ASSUMED_SIP_MONTHLY_INR = 10000
+ASSUMED_SIP_YEARS = 10
+ASSUMED_HOME_LOAN_INR = 3000000
+ASSUMED_HOME_LOAN_RATE_PCT = 8.5
+ASSUMED_HOME_LOAN_YEARS = 20
+
+# The Deep Walk engine
+DEEP_WALK_VERSION = 1
+DEEP_MAX_OUTPUT_TOKENS = 8192
+DEEP_MAX_ARTICLE_CHARS = 2200
+
 # Scraping settings - Configured for 15-Minute Auto-Refresh!
 SCRAPE_INTERVAL_MINUTES = 15
 MAX_ARTICLES_PER_FEED = 12

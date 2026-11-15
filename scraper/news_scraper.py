@@ -5,7 +5,6 @@ import html
 import re
 from config import NEWS_SOURCES, MAX_ARTICLES_PER_FEED, MIN_IMPORTANCE_SCORE
 from scraper.bypass_utils import fetch_page_content, extract_clean_article_text
-from engine.feynman import generate_feynman_breakdown, _generate_local_feynman
 from db.database import article_exists, save_article, record_source_stat, ensure_string, parse_pub_date_to_iso
 
 def safe_str(val: str) -> str:

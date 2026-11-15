@@ -94,6 +94,8 @@ def init_db():
         cursor.execute("ALTER TABLE articles ADD COLUMN is_read INTEGER DEFAULT 0")
     if "published_at" not in columns:
         cursor.execute("ALTER TABLE articles ADD COLUMN published_at TIMESTAMP")
+    if "deep_explanation" not in columns:
+        cursor.execute("ALTER TABLE articles ADD COLUMN deep_explanation TEXT")
 
     # Backfill published_at for existing rows where it's NULL or empty
     cursor.execute("SELECT id, pub_date, created_at FROM articles WHERE published_at IS NULL OR published_at = ''")
@@ -181,7 +183,15 @@ def save_article(article_data: dict) -> int:
     news_summary_val = article_data.get('news_summary') or article_data.get('raw_summary', '')
     pub_date_val = article_data.get('pub_date', '')
     published_at_val = article_data.get('published_at') or parse_pub_date_to_iso(pub_date_val)
-    
+
+    deep_val = article_data.get('deep_explanation')
+    if isinstance(deep_val, (dict, list)):
+        deep_json = json.dumps(deep_val, ensure_ascii=False)
+    elif deep_val:
+        deep_json = str(deep_val)
+    else:
+        deep_json = None
+
     try:
         cursor.execute('''
             INSERT INTO articles (
@@ -189,8 +199,9 @@ def save_article(article_data: dict) -> int:
                 raw_summary, content, feynman_eli5, feynman_jargon,
                 feynman_past_context, feynman_future_impact,
                 feynman_connected_news, feynman_money_psychology,
-                detective_loopholes, actionable_blueprint, news_summary, importance_score, is_read
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                detective_loopholes, actionable_blueprint, news_summary,
+                deep_explanation, importance_score, is_read
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
         ''', (
             ensure_string(article_data.get('title', '')),
             ensure_string(article_data.get('link', '')),
@@ -210,6 +221,7 @@ def save_article(article_data: dict) -> int:
             ensure_string(article_data.get('detective_loopholes', '')),
             ensure_string(article_data.get('actionable_blueprint', '')),
             ensure_string(news_summary_val),
+            deep_json,
             int(article_data.get('importance_score', 7))
         ))
         conn.commit()
@@ -249,9 +261,9 @@ def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=
         sql += " AND is_bookmarked = 1"
         
     if query:
-        sql += " AND (title LIKE ? OR feynman_eli5 LIKE ? OR raw_summary LIKE ? OR feynman_jargon LIKE ? OR detective_loopholes LIKE ? OR actionable_blueprint LIKE ?)"
+        sql += " AND (title LIKE ? OR feynman_eli5 LIKE ? OR raw_summary LIKE ? OR feynman_jargon LIKE ? OR detective_loopholes LIKE ? OR actionable_blueprint LIKE ? OR deep_explanation LIKE ?)"
         q = f"%{query}%"
-        params.extend([q, q, q, q, q, q])
+        params.extend([q, q, q, q, q, q, q])
         
     if sort_by == "impact":
         sql += " ORDER BY importance_score DESC, COALESCE(published_at, created_at) DESC, id DESC LIMIT ? OFFSET ?"
@@ -269,8 +281,10 @@ def get_articles(category=None, query=None, limit=10, offset=0, bookmarked_only=
             item['feynman_jargon'] = json.loads(item['feynman_jargon'])
         except Exception:
             item['feynman_jargon'] = []
+        # Keep the feed payload small: deep walks are fetched on demand.
+        item.pop('deep_explanation', None)
         articles.append(item)
-        
+
     conn.close()
     return articles
 
@@ -300,6 +314,10 @@ def get_article_by_id(article_id: int):
         item['feynman_jargon'] = json.loads(item['feynman_jargon'])
     except Exception:
         item['feynman_jargon'] = []
+    try:
+        item['deep_explanation'] = json.loads(item['deep_explanation']) if item.get('deep_explanation') else None
+    except Exception:
+        item['deep_explanation'] = None
     return item
 
 def update_article_feynman_data(article_id: int, feynman_data: dict):
@@ -343,6 +361,68 @@ def update_article_feynman_data(article_id: int, feynman_data: dict):
     ))
     conn.commit()
     conn.close()
+
+def update_article_deep(article_id: int, walk: dict, derived: dict, overwrite_legacy: bool = True):
+    """
+    Persist a Deep Walk JSON document.
+
+    overwrite_legacy should only be True for live AI output. A local/offline walk
+    may be stored so the reader has something to see, but it must never replace
+    good legacy analysis text with generic fallback prose.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    deep_json = json.dumps(walk, ensure_ascii=False) if isinstance(walk, dict) else None
+
+    if overwrite_legacy:
+        jargon_val = derived.get('feynman_jargon', [])
+        if isinstance(jargon_val, str):
+            jargon_json = jargon_val
+        else:
+            jargon_json = json.dumps(jargon_val, ensure_ascii=False)
+        cursor.execute('''
+            UPDATE articles SET
+                deep_explanation = ?,
+                feynman_eli5 = ?,
+                feynman_jargon = ?,
+                feynman_past_context = ?,
+                feynman_future_impact = ?,
+                feynman_connected_news = ?,
+                feynman_money_psychology = ?,
+                detective_loopholes = ?,
+                actionable_blueprint = ?,
+                news_summary = COALESCE(NULLIF(?, ''), news_summary),
+                importance_score = ?
+            WHERE id = ?
+        ''', (
+            deep_json,
+            ensure_string(derived.get('feynman_eli5', '')),
+            jargon_json,
+            ensure_string(derived.get('feynman_past_context', '')),
+            ensure_string(derived.get('feynman_future_impact', '')),
+            ensure_string(derived.get('feynman_connected_news', '')),
+            ensure_string(derived.get('feynman_money_psychology', '')),
+            ensure_string(derived.get('detective_loopholes', '')),
+            ensure_string(derived.get('actionable_blueprint', '')),
+            ensure_string(derived.get('news_summary', '')),
+            int(derived.get('importance_score', 8)),
+            article_id
+        ))
+    else:
+        cursor.execute('''
+            UPDATE articles SET
+                deep_explanation = ?,
+                news_summary = COALESCE(NULLIF(?, ''), news_summary)
+            WHERE id = ?
+        ''', (
+            deep_json,
+            ensure_string(derived.get('news_summary', '')),
+            article_id
+        ))
+
+    conn.commit()
+    conn.close()
+
 
 def mark_as_read(article_id: int):
     """Mark an article as read so next fresh news slides up."""
